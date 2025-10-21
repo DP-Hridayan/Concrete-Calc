@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Concrete Calc</string>
+    <string name="mix_design">Mix Design</string>
+    <string name="back_button">Back button</string>
+    <string name="enter_data_mix_design">Input data in respective locations as given below as per hint</string>
+    <string name="grade_of_concrete">Grade of Concrete</string>
+    <string name="exposure_condition">Exposure condition</string>
+    <string name="slump_value_in_mm">Slump value in mm</string>
+    <string name="nominal_max_aggregate_size">Nominal max aggregate size</string>
+    <string name="zone_of_fine_aggregate">Zone of fine aggregate</string>
+    <string name="type_of_concrete">Type of concrete</string>
+    <string name="type_of_concrete_application">Type of concrete application</string>
+    <string name="grade_of_cement">Grade of Cement</string>
+</resources>
