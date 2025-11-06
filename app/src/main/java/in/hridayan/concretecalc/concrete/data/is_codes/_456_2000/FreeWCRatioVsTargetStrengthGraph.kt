@@ -1,5 +1,7 @@
 package `in`.hridayan.concretecalc.concrete.data.is_codes._456_2000
 
+import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
+
 data class CurvePoint(val wcRatio: Double, val targetStrength: Double)
 
 val curve1 = listOf(
@@ -38,12 +40,20 @@ val curve3 = listOf(
     CurvePoint(0.65, 24.0)
 )
 
-fun getWCratioForTargetStrength(curve: List<CurvePoint>, targetStrength: Double): Double? {
+fun getWCratioForTargetStrength(gradeOfCement: CementGrades, targetStrength: Double): Double? {
+    val curve: List<CurvePoint> = when (gradeOfCement) {
+        CementGrades.OPC_33 -> curve1
+        CementGrades.OPC_43 -> curve2
+        CementGrades.OPC_53 -> curve3
+        else -> curve2
+    }
+
     for (i in 0 until curve.size - 1) {
         val p1 = curve[i]
         val p2 = curve[i + 1]
         if (targetStrength in p2.targetStrength..p1.targetStrength || targetStrength in p1.targetStrength..p2.targetStrength) {
-                val x = p1.wcRatio + (targetStrength - p1.targetStrength) * (p2.wcRatio - p1.wcRatio) / (p2.targetStrength - p1.targetStrength)
+            val x =
+                p1.wcRatio + (targetStrength - p1.targetStrength) * (p2.wcRatio - p1.wcRatio) / (p2.targetStrength - p1.targetStrength)
             return x
         }
     }

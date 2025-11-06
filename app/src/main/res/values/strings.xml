@@ -11,4 +11,13 @@
     <string name="type_of_concrete">Type of concrete</string>
     <string name="type_of_concrete_application">Type of concrete application</string>
     <string name="grade_of_cement">Grade of Cement</string>
+    <string name="specific_gravity">Specific gravity</string>
+    <string name="sp_gravity_of_water">Sp. gravity of water</string>
+    <string name="sp_gravity_of_cement">Sp. gravity of cement</string>
+    <string name="sp_gravity_of_fine_aggregate">Sp. gravity of fine aggregate</string>
+    <string name="sp_gravity_of_coarse_aggregate">Sp. gravity of coarse aggregate</string>
+    <string name="sp_gravity_of_admixture">Sp. gravity of admixture</string>
+    <string name="dosage_of_admixture">Dosage of admixture</string>
+    <string name="degree_of_water_reduction_envisaged">Degree of water reduction envisaged (in %)</string>
+    <string name="calculate">Calculate</string>
 </resources>

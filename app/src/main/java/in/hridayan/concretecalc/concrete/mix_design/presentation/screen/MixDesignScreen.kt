@@ -3,6 +3,8 @@
 package `in`.hridayan.concretecalc.concrete.mix_design.presentation.screen
 
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,9 +12,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -25,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +45,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -47,14 +53,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import `in`.hridayan.concretecalc.R
-import `in`.hridayan.concretecalc.concrete.data.model.GradeOfCement
-import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcrete
+import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
+import `in`.hridayan.concretecalc.concrete.data.model.ConcreteType
+import `in`.hridayan.concretecalc.concrete.data.model.SpGravities
 import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
 import `in`.hridayan.concretecalc.concrete.data.model.ZonesOfFineAggregate
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.viewmodel.MixDesignViewModel
@@ -64,10 +72,14 @@ import `in`.hridayan.concretecalc.core.presentation.components.card.IconWithText
 import `in`.hridayan.concretecalc.core.presentation.components.text.AutoResizeableText
 
 @Composable
-fun MixDesignScreen(modifier: Modifier = Modifier) {
+fun MixDesignScreen(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val weakHaptic = LocalWeakHaptic.current
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-
+    var shouldShowResults by rememberSaveable() { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -93,6 +105,24 @@ fun MixDesignScreen(modifier: Modifier = Modifier) {
                 scrollBehavior = scrollBehavior,
 
                 )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = {
+                    viewModel.calculate()
+                    shouldShowResults = true
+                    weakHaptic()
+                },
+                modifier = Modifier.padding(bottom = 20.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_calculate),
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                AutoResizeableText(stringResource(R.string.calculate))
+            }
+
         }) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -104,7 +134,7 @@ fun MixDesignScreen(modifier: Modifier = Modifier) {
                 IconWithTextCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp),
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
                     text = stringResource(R.string.enter_data_mix_design),
                     icon = painterResource(R.drawable.ic_info)
                 )
@@ -114,7 +144,7 @@ fun MixDesignScreen(modifier: Modifier = Modifier) {
                 ConcreteGradeDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp),
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
                 )
             }
 
@@ -122,7 +152,7 @@ fun MixDesignScreen(modifier: Modifier = Modifier) {
                 ExposureEnvironmentDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp),
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
                 )
             }
 
@@ -130,7 +160,7 @@ fun MixDesignScreen(modifier: Modifier = Modifier) {
                 SlumpSizeInput(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp),
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
                 )
             }
 
@@ -138,7 +168,7 @@ fun MixDesignScreen(modifier: Modifier = Modifier) {
                 NominalAggregateSizeDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp),
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
                 )
             }
 
@@ -146,7 +176,7 @@ fun MixDesignScreen(modifier: Modifier = Modifier) {
                 ZoneOfFineAggregateDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp),
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
                 )
             }
 
@@ -154,7 +184,7 @@ fun MixDesignScreen(modifier: Modifier = Modifier) {
                 TypeOfConcreteDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp),
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
                 )
             }
 
@@ -162,7 +192,15 @@ fun MixDesignScreen(modifier: Modifier = Modifier) {
                 GradeOfCementDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp),
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
+                )
+            }
+
+            item {
+                SpGravityInput(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
                 )
             }
 
@@ -181,8 +219,49 @@ fun MixDesignScreen(modifier: Modifier = Modifier) {
                         .height(25.dp)
                 )
             }
+
+            item {
+                if (shouldShowResults) {
+                    Results(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 15.dp, vertical = 10.dp)
+                    )
+                }
+            }
+
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(25.dp)
+                )
+            }
         }
     }
+}
+
+@Composable
+fun Results(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val result by viewModel.mixResult.collectAsState(null)
+
+    result?.let {
+        Text(
+            text = "Result: ${it.valueOfX}" +
+                    "Result2: ${it.standardDeviation}" +
+                    "Result3: ${it.targetStrength}" +
+                    "Result4: ${it.maxWaterCementRatio}" +
+                    "Result5: ${it.freeWaterCementRatio}" +
+                    "Result6: ${it.maxWaterContentForNominalSizeAnd50Slump}" +
+                    "Result7: ${it.changeInWaterContentPercentDueToSlump}" +
+                    "Result8: ${it.waterContentForGivenSlump}",
+            modifier = modifier
+        )
+    }
+
 }
 
 @Composable
@@ -193,7 +272,7 @@ fun ConcreteGradeDropdown(
 ) {
     val weakHaptic = LocalWeakHaptic.current
     val grades by viewModel.grades.collectAsState()
-    val selectedText by viewModel.selectedGrade.collectAsState()
+    val states by viewModel.states.collectAsState()
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -202,7 +281,7 @@ fun ConcreteGradeDropdown(
         modifier = modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = selectedText,
+            value = states.gradeOfConcrete.fieldValue,
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
@@ -227,7 +306,7 @@ fun ConcreteGradeDropdown(
                     text = { Text(grade.gradeName) },
                     onClick = {
                         weakHaptic()
-                        viewModel.setGrade(grade.gradeName)
+                        viewModel.setGradeOfConcreteField(TextFieldValue(grade.gradeName))
                         expanded = false
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -246,7 +325,7 @@ fun ExposureEnvironmentDropdown(
 ) {
     val weakHaptic = LocalWeakHaptic.current
     val exposureConditions by viewModel.exposureConditions.collectAsState()
-    val selectedText by viewModel.selectedExposureEnvironment.collectAsState()
+    val states by viewModel.states.collectAsState()
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -255,7 +334,7 @@ fun ExposureEnvironmentDropdown(
         modifier = modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = selectedText,
+            value = states.exposureCondition.fieldValue,
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
@@ -281,7 +360,7 @@ fun ExposureEnvironmentDropdown(
                     text = { Text(environment.envName) },
                     onClick = {
                         weakHaptic()
-                        viewModel.setExposureEnvironment(environment.envName)
+                        viewModel.setExposureEnvironmentField(environment)
                         expanded = false
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -298,13 +377,13 @@ fun SlumpSizeInput(
     viewModel: MixDesignViewModel = hiltViewModel(),
     label: String = stringResource(R.string.slump_value_in_mm)
 ) {
-    val slumpValue by viewModel.selectedSlumpValue.collectAsState()
+    val states by viewModel.states.collectAsState()
 
     OutlinedTextField(
-        value = slumpValue,
+        value = states.slumpValue.fieldValue,
         onValueChange = { input ->
-            if (input.all { it.isDigit() }) {
-                viewModel.setSlumpValue(input)
+            if (input.text.all { it.isDigit() }) {
+                viewModel.setSlumpValueField(TextFieldValue(input.text))
             }
         },
         label = {
@@ -329,7 +408,7 @@ fun NominalAggregateSizeDropdown(
 ) {
     val weakHaptic = LocalWeakHaptic.current
     val sizes = listOf("10 mm", "20 mm", "40 mm")
-    val selectedText by viewModel.selectedNominalMaxAggregate.collectAsState()
+    val states by viewModel.states.collectAsState()
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -338,7 +417,7 @@ fun NominalAggregateSizeDropdown(
         modifier = modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = selectedText,
+            value = states.maxAggregateSize.fieldValue,
             onValueChange = {},
             readOnly = true,
             label = {
@@ -368,7 +447,7 @@ fun NominalAggregateSizeDropdown(
                     text = { Text(size) },
                     onClick = {
                         weakHaptic()
-                        viewModel.setNominalMaxAggregateSize(size)
+                        viewModel.setNominalMaxAggregateSizeField(TextFieldValue(size))
                         expanded = false
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -387,8 +466,7 @@ fun ZoneOfFineAggregateDropdown(
 ) {
     val weakHaptic = LocalWeakHaptic.current
     val zones = ZonesOfFineAggregate.entries
-
-    val selectedText by viewModel.selectedZoneOfFineAggregate.collectAsState()
+    val states by viewModel.states.collectAsState()
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -397,13 +475,26 @@ fun ZoneOfFineAggregateDropdown(
         modifier = modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = selectedText,
+            value = states.zoneOfFineAggregate.fieldValue,
             onValueChange = {},
             readOnly = true,
             label = {
                 Text(
                     text = label,
                     modifier = Modifier.basicMarquee()
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    painterResource(R.drawable.ic_info),
+                    contentDescription = null,
+                    modifier = Modifier.clickable(
+                        enabled = true,
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = {
+                            weakHaptic()
+                        })
                 )
             },
             trailingIcon = {
@@ -422,12 +513,12 @@ fun ZoneOfFineAggregateDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            zones.map { it.zone }.forEach { zone ->
+            zones.forEach { zone ->
                 DropdownMenuItem(
-                    text = { Text(zone) },
+                    text = { Text(zone.zone) },
                     onClick = {
                         weakHaptic()
-                        viewModel.setZoneOfFineAggregate(zone)
+                        viewModel.setZoneOfFineAggregateField(zone)
                         expanded = false
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -444,9 +535,8 @@ fun TypeOfConcreteDropdown(
     label: String = stringResource(R.string.type_of_concrete),
 ) {
     val weakHaptic = LocalWeakHaptic.current
-    val types = TypeOfConcrete.entries
-
-    val selectedText by viewModel.selectedTypeOfConcrete.collectAsState()
+    val types = ConcreteType.entries
+    val states by viewModel.states.collectAsState()
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -455,7 +545,7 @@ fun TypeOfConcreteDropdown(
         modifier = modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = selectedText,
+            value = states.typeOfConcrete.fieldValue,
             onValueChange = {},
             readOnly = true,
             label = {
@@ -480,12 +570,12 @@ fun TypeOfConcreteDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            types.map { it.type }.forEach { type ->
+            types.forEach { type ->
                 DropdownMenuItem(
-                    text = { Text(type) },
+                    text = { Text(type.type) },
                     onClick = {
                         weakHaptic()
-                        viewModel.setTypeOfConcrete(type)
+                        viewModel.setTypeOfConcreteField(type)
                         expanded = false
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -502,9 +592,8 @@ fun GradeOfCementDropdown(
     label: String = stringResource(R.string.grade_of_cement),
 ) {
     val weakHaptic = LocalWeakHaptic.current
-    val grades = GradeOfCement.entries
-
-    val selectedText by viewModel.selectedGradeOfCement.collectAsState()
+    val grades = CementGrades.entries
+    val states by viewModel.states.collectAsState()
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -513,7 +602,7 @@ fun GradeOfCementDropdown(
         modifier = modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
-            value = selectedText,
+            value = states.gradeOfCement.fieldValue,
             onValueChange = {},
             readOnly = true,
             label = {
@@ -538,17 +627,89 @@ fun GradeOfCementDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            grades.map { it.gradeName }.forEach { grade ->
+            grades.forEach { grade ->
                 DropdownMenuItem(
-                    text = { Text(grade) },
+                    text = { Text(grade.gradeName) },
                     onClick = {
                         weakHaptic()
-                        viewModel.setGradeOfCement(grade)
+                        viewModel.setGradeOfCementField(grade)
                         expanded = false
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun SpGravityInput(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel(),
+) {
+    val labels = listOf(
+        stringResource(R.string.sp_gravity_of_water),
+        stringResource(R.string.sp_gravity_of_cement),
+        stringResource(R.string.sp_gravity_of_fine_aggregate),
+        stringResource(R.string.sp_gravity_of_coarse_aggregate)
+    )
+
+    val list = SpGravities.entries
+
+    val states by viewModel.states.collectAsState()
+
+
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        AutoResizeableText(
+            modifier = Modifier
+                .padding(start = 5.dp, top = 10.dp)
+                .offset(y = 10.dp),
+            text = stringResource(R.string.specific_gravity),
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.bodyMediumEmphasized
+        )
+
+        list.forEachIndexed { index, gravity ->
+            val fieldValue = when (gravity) {
+                SpGravities.WATER -> states.spGravityOfWater.fieldValue
+                SpGravities.CEMENT -> states.spGravityOfCement.fieldValue
+                SpGravities.FINE_AGGREGATE -> states.spGravityOfFineAggregate.fieldValue
+                SpGravities.COARSE_AGGREGATE -> states.spGravityOfCoarseAggregate.fieldValue
+            }
+
+            val updateValues: (fieldValue: TextFieldValue) -> Unit = {
+                when (gravity) {
+                    SpGravities.WATER -> viewModel.setSpGravityOfWater(it)
+                    SpGravities.CEMENT -> viewModel.setSpGravityOfCement(it)
+                    SpGravities.FINE_AGGREGATE -> viewModel.setSpGravityOfFineAggregate(it)
+                    SpGravities.COARSE_AGGREGATE -> viewModel.setSpGravityOfCoarseAggregate(it)
+                }
+            }
+
+            OutlinedTextField(
+                value = fieldValue,
+                onValueChange = { input ->
+                    if (input.text.isEmpty() || input.text.matches(Regex("^\\d*\\.?\\d*\$"))) {
+                        updateValues(input)
+                    }
+                },
+                label = {
+                    Text(
+                        text = labels.getOrNull(index) ?: "Specific Gravity",
+                        modifier = Modifier.basicMarquee()
+                    )
+                },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                )
+            )
+
         }
     }
 }
@@ -567,6 +728,7 @@ fun TypeOfConcreteApplication(
         verticalArrangement = Arrangement.spacedBy(15.dp)
     ) {
         AutoResizeableText(
+            modifier = Modifier.padding(top = 5.dp),
             text = stringResource(R.string.type_of_concrete_application),
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.bodyMediumEmphasized
