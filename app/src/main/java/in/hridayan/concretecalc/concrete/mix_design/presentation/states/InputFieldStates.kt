@@ -7,6 +7,13 @@ import `in`.hridayan.concretecalc.concrete.data.model.ExposureEnvironment
 import `in`.hridayan.concretecalc.concrete.data.model.ZonesOfFineAggregate
 
 sealed class InputFieldStates() {
+
+    data class ProjectName(
+        val fieldValue: TextFieldValue = TextFieldValue(""),
+        val isError: Boolean = false,
+        val errorMessage: String = ""
+    ) : InputFieldStates()
+
     data class GradeOfConcrete(
         val fieldValue: TextFieldValue = TextFieldValue(""),
         val isError: Boolean = false,
@@ -72,6 +79,30 @@ sealed class InputFieldStates() {
     ) : InputFieldStates()
 
     data class SpGravityOfCoarseAggregate(
+        val fieldValue: TextFieldValue = TextFieldValue(""),
+        val isError: Boolean = false,
+        val errorMessage: String = ""
+    ) : InputFieldStates()
+
+    data class SpGravityOfAggregate(
+        val fieldValue: TextFieldValue = TextFieldValue(""),
+        val isError: Boolean = false,
+        val errorMessage: String = ""
+    ) : InputFieldStates()
+
+    data class WaterReductionPercentage(
+        val fieldValue: TextFieldValue = TextFieldValue(""),
+        val isError: Boolean = false,
+        val errorMessage: String = ""
+    ) : InputFieldStates()
+
+    data class SpGravityOfAdmixture(
+        val fieldValue: TextFieldValue = TextFieldValue(""),
+        val isError: Boolean = false,
+        val errorMessage: String = ""
+    ) : InputFieldStates()
+
+    data class DosageOfAdmixture(
         val fieldValue: TextFieldValue = TextFieldValue(""),
         val isError: Boolean = false,
         val errorMessage: String = ""

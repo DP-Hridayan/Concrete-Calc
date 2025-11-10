@@ -1,10 +1,13 @@
 package `in`.hridayan.concretecalc.concrete.mix_design.presentation.viewmodel
 
+import android.content.Context
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import `in`.hridayan.concretecalc.R
 import `in`.hridayan.concretecalc.concrete.data.is_codes._456_2000.ConcreteGrade
 import `in`.hridayan.concretecalc.concrete.data.is_codes._456_2000.ExposureCondition
 import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
@@ -24,7 +27,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MixDesignViewModel @Inject constructor(
-    private val concreteRepository: ConcreteRepository
+    private val concreteRepository: ConcreteRepository,
+    @param:ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     private val _grades = MutableStateFlow<List<ConcreteGrade>>(emptyList())
@@ -39,6 +43,8 @@ class MixDesignViewModel @Inject constructor(
     private val _states = MutableStateFlow<MixDesignScreenState>(MixDesignScreenState())
     val states: StateFlow<MixDesignScreenState> = _states
 
+    private val _isWaterReductionSwitchChecked = MutableStateFlow(false)
+    val isWaterReductionSwitchChecked = _isWaterReductionSwitchChecked
 
     val mixResult = concreteRepository.mixDesignResult
 
@@ -56,10 +62,24 @@ class MixDesignViewModel @Inject constructor(
         loadGrades()
     }
 
+    fun setProjectNameField(value: TextFieldValue) {
+        _states.update {
+            it.copy(
+                projectName = it.projectName.copy(
+                    fieldValue = value,
+                    isError = false
+                )
+            )
+        }
+    }
+
     fun setGradeOfConcreteField(value: TextFieldValue) {
         _states.update {
             it.copy(
-                gradeOfConcrete = it.gradeOfConcrete.copy(fieldValue = value)
+                gradeOfConcrete = it.gradeOfConcrete.copy(
+                    fieldValue = value,
+                    isError = false
+                )
             )
         }
     }
@@ -69,7 +89,8 @@ class MixDesignViewModel @Inject constructor(
             it.copy(
                 exposureCondition = it.exposureCondition.copy(
                     fieldValue = TextFieldValue(environment.envName),
-                    environment = environment
+                    environment = environment,
+                    isError = false
                 )
             )
         }
@@ -78,7 +99,10 @@ class MixDesignViewModel @Inject constructor(
     fun setSlumpValueField(value: TextFieldValue) {
         _states.update {
             it.copy(
-                slumpValue = it.slumpValue.copy(fieldValue = value.copy(selection = TextRange(value.text.length)))
+                slumpValue = it.slumpValue.copy(
+                    fieldValue = value.copy(selection = TextRange(value.text.length)),
+                    isError = false
+                )
             )
         }
     }
@@ -86,7 +110,10 @@ class MixDesignViewModel @Inject constructor(
     fun setNominalMaxAggregateSizeField(value: TextFieldValue) {
         _states.update {
             it.copy(
-                maxAggregateSize = it.maxAggregateSize.copy(fieldValue = value)
+                maxAggregateSize = it.maxAggregateSize.copy(
+                    fieldValue = value,
+                    isError = false
+                )
             )
         }
     }
@@ -96,7 +123,8 @@ class MixDesignViewModel @Inject constructor(
             it.copy(
                 zoneOfFineAggregate = it.zoneOfFineAggregate.copy(
                     fieldValue = TextFieldValue(zone.zone),
-                    zone = zone
+                    zone = zone,
+                    isError = false
                 )
             )
         }
@@ -107,7 +135,8 @@ class MixDesignViewModel @Inject constructor(
             it.copy(
                 typeOfConcrete = it.typeOfConcrete.copy(
                     fieldValue = TextFieldValue(type.type),
-                    type = type
+                    type = type,
+                    isError = false
                 )
             )
         }
@@ -124,7 +153,8 @@ class MixDesignViewModel @Inject constructor(
                     fieldValue = TextFieldValue(
                         grade.name
                     ),
-                    gradeOfCement = grade
+                    gradeOfCement = grade,
+                    isError = false
                 )
             )
         }
@@ -133,7 +163,10 @@ class MixDesignViewModel @Inject constructor(
     fun setSpGravityOfWater(value: TextFieldValue) {
         _states.update {
             it.copy(
-                spGravityOfWater = it.spGravityOfWater.copy(fieldValue = value)
+                spGravityOfWater = it.spGravityOfWater.copy(
+                    fieldValue = value,
+                    isError = false
+                )
             )
         }
     }
@@ -141,7 +174,9 @@ class MixDesignViewModel @Inject constructor(
     fun setSpGravityOfCement(value: TextFieldValue) {
         _states.update {
             it.copy(
-                spGravityOfCement = it.spGravityOfCement.copy(fieldValue = value)
+                spGravityOfCement = it.spGravityOfCement.copy(
+                    fieldValue = value, isError = false
+                )
             )
         }
     }
@@ -149,7 +184,10 @@ class MixDesignViewModel @Inject constructor(
     fun setSpGravityOfFineAggregate(value: TextFieldValue) {
         _states.update {
             it.copy(
-                spGravityOfFineAggregate = it.spGravityOfFineAggregate.copy(fieldValue = value)
+                spGravityOfFineAggregate = it.spGravityOfFineAggregate.copy(
+                    fieldValue = value,
+                    isError = false
+                )
             )
         }
     }
@@ -157,9 +195,167 @@ class MixDesignViewModel @Inject constructor(
     fun setSpGravityOfCoarseAggregate(value: TextFieldValue) {
         _states.update {
             it.copy(
-                spGravityOfCoarseAggregate = it.spGravityOfCoarseAggregate.copy(fieldValue = value)
+                spGravityOfCoarseAggregate = it.spGravityOfCoarseAggregate.copy(
+                    fieldValue = value,
+                    isError = false
+                )
             )
         }
+    }
+
+    fun setWaterReductionPercentage(value: TextFieldValue) {
+        _states.update {
+            it.copy(
+                waterReductionPercentage = it.waterReductionPercentage.copy(
+                    fieldValue = value,
+                    isError = false
+                )
+            )
+        }
+    }
+
+    fun setSpGravityOfAdmixture(value: TextFieldValue) {
+        _states.update {
+            it.copy(
+                spGravityOfAdmixture = it.spGravityOfAdmixture.copy(
+                    fieldValue = value,
+                    isError = false
+                )
+            )
+        }
+    }
+
+    fun setDosageOfAdmixture(value: TextFieldValue) {
+        _states.update {
+            it.copy(
+                dosageOfAdmixture = it.dosageOfAdmixture.copy(
+                    fieldValue = value,
+                    isError = false
+                )
+            )
+        }
+    }
+
+    fun toggleWaterReductionSwitch() {
+        _isWaterReductionSwitchChecked.value = !isWaterReductionSwitchChecked.value
+    }
+
+    fun checkEmptyFields(): Boolean = with(_states.value) {
+        val fieldBlankErrorMessage = appContext.getString(R.string.field_cannot_be_empty)
+
+        if (this.gradeOfConcrete.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                gradeOfConcrete = this.gradeOfConcrete.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.typeOfConcrete.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                typeOfConcrete = this.typeOfConcrete.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.exposureCondition.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                exposureCondition = this.exposureCondition.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.gradeOfCement.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                gradeOfCement = this.gradeOfCement.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.spGravityOfCement.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                spGravityOfCement = this.spGravityOfCement.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.spGravityOfWater.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                spGravityOfWater = this.spGravityOfWater.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.maxAggregateSize.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                maxAggregateSize = this.maxAggregateSize.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.zoneOfFineAggregate.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                zoneOfFineAggregate = this.zoneOfFineAggregate.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.slumpValue.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                slumpValue = this.slumpValue.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.spGravityOfCoarseAggregate.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                spGravityOfCoarseAggregate = this.spGravityOfCoarseAggregate.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.spGravityOfFineAggregate.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                spGravityOfFineAggregate = this.spGravityOfFineAggregate.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (_isWaterReductionSwitchChecked.value && this.waterReductionPercentage.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                waterReductionPercentage = this.waterReductionPercentage.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (_isWaterReductionSwitchChecked.value && this.spGravityOfAdmixture.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                spGravityOfAdmixture = this.spGravityOfAdmixture.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (_isWaterReductionSwitchChecked.value && this.dosageOfAdmixture.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                dosageOfAdmixture = this.dosageOfAdmixture.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else false
     }
 
     fun loadGrades() {

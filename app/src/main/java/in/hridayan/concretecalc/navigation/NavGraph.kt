@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.screen.MixDesignScreen
+import `in`.hridayan.concretecalc.concrete.mix_design.presentation.screen.ResultsScreen
 
 @Composable
 fun SharedTransitionScope.Navigation(isFirstLaunch: Boolean = false) {
@@ -25,6 +26,13 @@ fun SharedTransitionScope.Navigation(isFirstLaunch: Boolean = false) {
                 popExitTransition = { slideFadeOutToRight() }
             ) {
                 MixDesignScreen()
+            }
+
+            composable<NavRoutes.ResultsScreen>(
+                enterTransition = { slideFadeInFromRight() },
+                popExitTransition = { slideFadeOutToRight() }
+            ) {
+                ResultsScreen()
             }
         }
     }

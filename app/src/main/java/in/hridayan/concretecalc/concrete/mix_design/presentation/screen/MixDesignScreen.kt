@@ -3,8 +3,6 @@
 package `in`.hridayan.concretecalc.concrete.mix_design.presentation.screen
 
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -35,6 +32,7 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
@@ -47,6 +45,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
@@ -62,13 +61,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import `in`.hridayan.concretecalc.R
 import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
 import `in`.hridayan.concretecalc.concrete.data.model.ConcreteType
-import `in`.hridayan.concretecalc.concrete.data.model.SpGravities
 import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
 import `in`.hridayan.concretecalc.concrete.data.model.ZonesOfFineAggregate
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.viewmodel.MixDesignViewModel
 import `in`.hridayan.concretecalc.core.common.LocalWeakHaptic
 import `in`.hridayan.concretecalc.core.presentation.components.button.BackButton
 import `in`.hridayan.concretecalc.core.presentation.components.card.IconWithTextCard
+import `in`.hridayan.concretecalc.core.presentation.components.card.PillShapedCard
 import `in`.hridayan.concretecalc.core.presentation.components.text.AutoResizeableText
 
 @Composable
@@ -77,9 +76,10 @@ fun MixDesignScreen(
     viewModel: MixDesignViewModel = hiltViewModel()
 ) {
     val weakHaptic = LocalWeakHaptic.current
+    val isWaterReductionSwitchChecked by viewModel.isWaterReductionSwitchChecked.collectAsState()
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    var shouldShowResults by rememberSaveable() { mutableStateOf(false) }
+    var shouldShowResults by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -109,6 +109,9 @@ fun MixDesignScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
+                    if (viewModel.checkEmptyFields()) {
+                        return@ExtendedFloatingActionButton
+                    }
                     viewModel.calculate()
                     shouldShowResults = true
                     weakHaptic()
@@ -141,7 +144,34 @@ fun MixDesignScreen(
             }
 
             item {
+                AutoResizeableText(
+                    stringResource(R.string.project_and_strength_requirements),
+                    style = MaterialTheme.typography.labelLargeEmphasized,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp, start = 20.dp, end = 20.dp)
+                )
+            }
+
+            item {
+                ProjectNameInputField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 10.dp)
+                )
+            }
+
+            item {
                 ConcreteGradeDropdown(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
+                )
+            }
+
+            item {
+                TypeOfConcreteDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 15.dp, vertical = 10.dp),
@@ -157,10 +187,54 @@ fun MixDesignScreen(
             }
 
             item {
-                SlumpSizeInput(
+                AutoResizeableText(
+                    stringResource(R.string.material_properties_cement_and_water),
+                    style = MaterialTheme.typography.labelLargeEmphasized,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp, start = 20.dp, end = 20.dp)
+                )
+            }
+
+            item {
+                GradeOfCementDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 15.dp, vertical = 10.dp),
+                )
+            }
+
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(15.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SpGravityCementInput(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    )
+
+                    SpGravityWaterInput(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    )
+                }
+            }
+
+            item {
+                AutoResizeableText(
+                    stringResource(R.string.material_properties_aggregate),
+                    style = MaterialTheme.typography.labelLargeEmphasized,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp, start = 20.dp, end = 20.dp)
                 )
             }
 
@@ -181,7 +255,7 @@ fun MixDesignScreen(
             }
 
             item {
-                TypeOfConcreteDropdown(
+                SlumpSizeInput(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 15.dp, vertical = 10.dp),
@@ -189,19 +263,48 @@ fun MixDesignScreen(
             }
 
             item {
-                GradeOfCementDropdown(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 15.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(15.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SpGravityCoarseAggregateInput(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    )
+
+                    SpGravityFineAggregateInput(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    )
+                }
+            }
+
+            item {
+                WaterReductionSwitch(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 15.dp, end = 15.dp, top = 20.dp, bottom = 10.dp),
                 )
             }
 
             item {
-                SpGravityInput(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 15.dp, vertical = 10.dp),
-                )
+                if (isWaterReductionSwitchChecked) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 15.dp, vertical = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
+                    ) {
+                        WaterReductionPercentageInput(modifier = Modifier.fillMaxWidth())
+                        SpGravityOfAdmixture(modifier = Modifier.fillMaxWidth())
+                        DosageOfAdmixture(modifier = Modifier.fillMaxWidth())
+                    }
+                }
             }
 
             item {
@@ -265,6 +368,20 @@ fun Results(
 }
 
 @Composable
+fun ProjectNameInputField(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val states by viewModel.states.collectAsState()
+
+    OutlinedTextField(
+        modifier = modifier,
+        value = states.projectName.fieldValue,
+        onValueChange = { viewModel.setProjectNameField(it) },
+        label = { Text(stringResource(R.string.project_name)) })
+}
+
+@Composable
 fun ConcreteGradeDropdown(
     modifier: Modifier = Modifier,
     viewModel: MixDesignViewModel = hiltViewModel(),
@@ -284,7 +401,10 @@ fun ConcreteGradeDropdown(
             value = states.gradeOfConcrete.fieldValue,
             onValueChange = {},
             readOnly = true,
-            label = { Text(label) },
+            isError = states.gradeOfConcrete.isError,
+            label = {
+                Text(
+                    text = if (states.gradeOfConcrete.isError) states.gradeOfConcrete.errorMessage else label) },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
@@ -337,7 +457,12 @@ fun ExposureEnvironmentDropdown(
             value = states.exposureCondition.fieldValue,
             onValueChange = {},
             readOnly = true,
-            label = { Text(label) },
+            isError = states.exposureCondition.isError,
+            label = {
+                Text(
+                    text = if (states.exposureCondition.isError) states.exposureCondition.errorMessage else label
+                )
+            },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
@@ -386,10 +511,17 @@ fun SlumpSizeInput(
                 viewModel.setSlumpValueField(TextFieldValue(input.text))
             }
         },
+        isError = states.slumpValue.isError,
         label = {
             Text(
-                text = label,
+                text = if (states.slumpValue.isError) states.slumpValue.errorMessage else label,
                 modifier = Modifier.basicMarquee()
+            )
+        },
+        trailingIcon = {
+            Text(
+                text = "mm",
+                modifier = Modifier.padding(end = 10.dp)
             )
         },
         singleLine = true,
@@ -420,9 +552,10 @@ fun NominalAggregateSizeDropdown(
             value = states.maxAggregateSize.fieldValue,
             onValueChange = {},
             readOnly = true,
+            isError = states.maxAggregateSize.isError,
             label = {
                 Text(
-                    text = label,
+                    text = if (states.maxAggregateSize.isError) states.maxAggregateSize.errorMessage else label,
                     modifier = Modifier.basicMarquee()
                 )
             },
@@ -478,23 +611,11 @@ fun ZoneOfFineAggregateDropdown(
             value = states.zoneOfFineAggregate.fieldValue,
             onValueChange = {},
             readOnly = true,
+            isError = states.zoneOfFineAggregate.isError,
             label = {
                 Text(
-                    text = label,
+                    text = if (states.zoneOfFineAggregate.isError) states.zoneOfFineAggregate.errorMessage else label,
                     modifier = Modifier.basicMarquee()
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    painterResource(R.drawable.ic_info),
-                    contentDescription = null,
-                    modifier = Modifier.clickable(
-                        enabled = true,
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() },
-                        onClick = {
-                            weakHaptic()
-                        })
                 )
             },
             trailingIcon = {
@@ -548,9 +669,10 @@ fun TypeOfConcreteDropdown(
             value = states.typeOfConcrete.fieldValue,
             onValueChange = {},
             readOnly = true,
+            isError = states.typeOfConcrete.isError,
             label = {
                 Text(
-                    text = label,
+                    text = if (states.typeOfConcrete.isError) states.typeOfConcrete.errorMessage else label,
                     modifier = Modifier.basicMarquee()
                 )
             },
@@ -605,9 +727,11 @@ fun GradeOfCementDropdown(
             value = states.gradeOfCement.fieldValue,
             onValueChange = {},
             readOnly = true,
+            isError = states.gradeOfCement.isError,
             label = {
                 Text(
-                    text = label,
+                    text = if (states.gradeOfCement.isError) states.gradeOfCement.errorMessage
+                    else label,
                     modifier = Modifier.basicMarquee()
                 )
             },
@@ -643,75 +767,107 @@ fun GradeOfCementDropdown(
 }
 
 @Composable
-fun SpGravityInput(
+fun SpGravityCementInput(
     modifier: Modifier = Modifier,
-    viewModel: MixDesignViewModel = hiltViewModel(),
+    viewModel: MixDesignViewModel = hiltViewModel()
 ) {
-    val labels = listOf(
-        stringResource(R.string.sp_gravity_of_water),
-        stringResource(R.string.sp_gravity_of_cement),
-        stringResource(R.string.sp_gravity_of_fine_aggregate),
-        stringResource(R.string.sp_gravity_of_coarse_aggregate)
-    )
-
-    val list = SpGravities.entries
-
     val states by viewModel.states.collectAsState()
 
-
-
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        AutoResizeableText(
-            modifier = Modifier
-                .padding(start = 5.dp, top = 10.dp)
-                .offset(y = 10.dp),
-            text = stringResource(R.string.specific_gravity),
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.bodyMediumEmphasized
-        )
-
-        list.forEachIndexed { index, gravity ->
-            val fieldValue = when (gravity) {
-                SpGravities.WATER -> states.spGravityOfWater.fieldValue
-                SpGravities.CEMENT -> states.spGravityOfCement.fieldValue
-                SpGravities.FINE_AGGREGATE -> states.spGravityOfFineAggregate.fieldValue
-                SpGravities.COARSE_AGGREGATE -> states.spGravityOfCoarseAggregate.fieldValue
-            }
-
-            val updateValues: (fieldValue: TextFieldValue) -> Unit = {
-                when (gravity) {
-                    SpGravities.WATER -> viewModel.setSpGravityOfWater(it)
-                    SpGravities.CEMENT -> viewModel.setSpGravityOfCement(it)
-                    SpGravities.FINE_AGGREGATE -> viewModel.setSpGravityOfFineAggregate(it)
-                    SpGravities.COARSE_AGGREGATE -> viewModel.setSpGravityOfCoarseAggregate(it)
-                }
-            }
-
-            OutlinedTextField(
-                value = fieldValue,
-                onValueChange = { input ->
-                    if (input.text.isEmpty() || input.text.matches(Regex("^\\d*\\.?\\d*\$"))) {
-                        updateValues(input)
-                    }
-                },
-                label = {
-                    Text(
-                        text = labels.getOrNull(index) ?: "Specific Gravity",
-                        modifier = Modifier.basicMarquee()
-                    )
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number
-                )
+    OutlinedTextField(
+        value = states.spGravityOfCement.fieldValue,
+        onValueChange = { viewModel.setSpGravityOfCement(it) },
+        isError = states.spGravityOfCement.isError,
+        label = {
+            Text(
+                text = if (states.spGravityOfCement.isError) states.spGravityOfCement.errorMessage
+                else stringResource(R.string.sp_gravity_of_cement),
+                modifier = Modifier.basicMarquee()
             )
+        },
+        singleLine = true,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number
+        )
+    )
+}
 
-        }
-    }
+@Composable
+fun SpGravityWaterInput(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val states by viewModel.states.collectAsState()
+
+    OutlinedTextField(
+        value = states.spGravityOfWater.fieldValue,
+        onValueChange = { viewModel.setSpGravityOfWater(it) },
+        isError = states.spGravityOfWater.isError,
+        label = {
+            Text(
+                text = if (states.spGravityOfWater.isError) states.spGravityOfWater.errorMessage
+                else stringResource(R.string.sp_gravity_of_water),
+                modifier = Modifier.basicMarquee()
+            )
+        },
+        singleLine = true,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number
+        )
+    )
+}
+
+@Composable
+fun SpGravityFineAggregateInput(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val states by viewModel.states.collectAsState()
+
+    OutlinedTextField(
+        value = states.spGravityOfFineAggregate.fieldValue,
+        onValueChange = { viewModel.setSpGravityOfFineAggregate(it) },
+        isError = states.spGravityOfFineAggregate.isError,
+        label = {
+            Text(
+                text = if (states.spGravityOfFineAggregate.isError) states.spGravityOfFineAggregate.errorMessage
+                else stringResource(R.string.sp_gravity_of_fine_aggregate),
+                modifier = Modifier.basicMarquee()
+            )
+        },
+        singleLine = true,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number
+        )
+    )
+}
+
+@Composable
+fun SpGravityCoarseAggregateInput(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val states by viewModel.states.collectAsState()
+
+    OutlinedTextField(
+        value = states.spGravityOfCoarseAggregate.fieldValue,
+        onValueChange = { viewModel.setSpGravityOfCoarseAggregate(it) },
+        isError = states.spGravityOfCoarseAggregate.isError,
+        label = {
+            Text(
+                text = if (states.spGravityOfCoarseAggregate.isError) states.spGravityOfCoarseAggregate.errorMessage
+                else stringResource(R.string.sp_gravity_of_coarse_aggregate),
+                modifier = Modifier.basicMarquee()
+            )
+        },
+        singleLine = true,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number
+        )
+    )
 }
 
 @Composable
@@ -761,4 +917,132 @@ fun TypeOfConcreteApplication(
             }
         }
     }
+}
+
+@Composable
+fun WaterReductionSwitch(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val isWaterReductionSwitchChecked by viewModel.isWaterReductionSwitchChecked.collectAsState()
+    val weakHaptic = LocalWeakHaptic.current
+
+    PillShapedCard(
+        modifier = modifier,
+        clickable = true,
+        onClick = {
+            viewModel.toggleWaterReductionSwitch()
+            weakHaptic()
+        }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 15.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(15.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.water_reduction_needed),
+                style = MaterialTheme.typography.bodyLargeEmphasized,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            )
+
+            Switch(
+                checked = isWaterReductionSwitchChecked,
+                onCheckedChange = {
+                    viewModel.toggleWaterReductionSwitch()
+                    weakHaptic()
+                },
+                thumbContent = {
+                    Icon(
+                        imageVector = if (isWaterReductionSwitchChecked) Icons.Rounded.Check else Icons.Rounded.Close,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                })
+        }
+    }
+}
+
+@Composable
+fun WaterReductionPercentageInput(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val states by viewModel.states.collectAsState()
+
+    OutlinedTextField(
+        value = states.waterReductionPercentage.fieldValue,
+        onValueChange = { viewModel.setWaterReductionPercentage(it) },
+        isError = states.waterReductionPercentage.isError,
+        label = {
+            Text(
+                text = if (states.waterReductionPercentage.isError) states.waterReductionPercentage.errorMessage
+                else stringResource(R.string.water_reduction_percentage),
+                modifier = Modifier.basicMarquee()
+            )
+        },
+        trailingIcon = { Text("%") },
+        singleLine = true,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number
+        )
+    )
+}
+
+@Composable
+fun SpGravityOfAdmixture(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val states by viewModel.states.collectAsState()
+
+    OutlinedTextField(
+        value = states.spGravityOfAdmixture.fieldValue,
+        onValueChange = { viewModel.setSpGravityOfAdmixture(it) },
+        isError = states.spGravityOfAdmixture.isError,
+        label = {
+            Text(
+                text = if (states.spGravityOfAdmixture.isError) states.spGravityOfAdmixture.errorMessage
+                else stringResource(R.string.sp_gravity_of_admixture),
+                modifier = Modifier.basicMarquee()
+            )
+        },
+        singleLine = true,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number
+        )
+    )
+}
+
+@Composable
+fun DosageOfAdmixture(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val states by viewModel.states.collectAsState()
+
+    OutlinedTextField(
+        value = states.dosageOfAdmixture.fieldValue,
+        onValueChange = { viewModel.setDosageOfAdmixture(it) },
+        isError = states.dosageOfAdmixture.isError,
+        label = {
+            Text(
+                text = if (states.dosageOfAdmixture.isError) states.dosageOfAdmixture.errorMessage
+                else stringResource(R.string.dosage_of_admixture),
+                modifier = Modifier.basicMarquee()
+            )
+        },
+        trailingIcon = { Text("%") },
+        singleLine = true,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number
+        )
+    )
 }

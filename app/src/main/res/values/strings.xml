@@ -12,12 +12,19 @@
     <string name="type_of_concrete_application">Type of concrete application</string>
     <string name="grade_of_cement">Grade of Cement</string>
     <string name="specific_gravity">Specific gravity</string>
-    <string name="sp_gravity_of_water">Sp. gravity of water</string>
-    <string name="sp_gravity_of_cement">Sp. gravity of cement</string>
-    <string name="sp_gravity_of_fine_aggregate">Sp. gravity of fine aggregate</string>
-    <string name="sp_gravity_of_coarse_aggregate">Sp. gravity of coarse aggregate</string>
-    <string name="sp_gravity_of_admixture">Sp. gravity of admixture</string>
+    <string name="sp_gravity_of_water">Sp. gravity (Water)</string>
+    <string name="sp_gravity_of_cement">Sp. gravity (Cement)</string>
+    <string name="sp_gravity_of_fine_aggregate">Sp. gravity (Fine)</string>
+    <string name="sp_gravity_of_coarse_aggregate">Sp. gravity (Coarse)</string>
+    <string name="sp_gravity_of_admixture">Sp. gravity (Admixture)</string>
     <string name="dosage_of_admixture">Dosage of admixture</string>
     <string name="degree_of_water_reduction_envisaged">Degree of water reduction envisaged (in %)</string>
     <string name="calculate">Calculate</string>
+    <string name="project_name">Project Name/ID (Optional)</string>
+    <string name="project_and_strength_requirements">Project &amp; strength requirements</string>
+    <string name="material_properties_cement_and_water">Material properties - Cement &amp; Water</string>
+    <string name="material_properties_aggregate">Material properties - Aggregate</string>
+    <string name="water_reduction_needed">Water reduction needed</string>
+    <string name="water_reduction_percentage">Water reduction percentage</string>
+    <string name="field_cannot_be_empty">Field cannot be empty</string>
 </resources>
