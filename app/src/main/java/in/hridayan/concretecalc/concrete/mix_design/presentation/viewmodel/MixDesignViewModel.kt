@@ -145,7 +145,7 @@ class MixDesignViewModel @Inject constructor(
             it.copy(
                 gradeOfCement = it.gradeOfCement.copy(
                     fieldValue = TextFieldValue(
-                        grade.name
+                        grade.gradeName
                     ),
                     gradeOfCement = grade,
                     isError = false

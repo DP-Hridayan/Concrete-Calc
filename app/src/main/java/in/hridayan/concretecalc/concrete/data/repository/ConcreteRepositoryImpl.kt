@@ -1,6 +1,7 @@
 package `in`.hridayan.concretecalc.concrete.data.repository
 
 import android.annotation.SuppressLint
+import android.util.Log
 import `in`.hridayan.concretecalc.concrete.data.is_codes._10262_2019.Table1ValueOfX
 import `in`.hridayan.concretecalc.concrete.data.is_codes._10262_2019.Table2AssumedStandardDeviation
 import `in`.hridayan.concretecalc.concrete.data.is_codes._10262_2019.Table3ApproximateAirContent
@@ -96,7 +97,7 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
         val cementContentWithoutAdmixture = waterContentForGivenSlump / freeWaterCementRatio
         val cementContentWithAdmixture = finalWaterContent / freeWaterCementRatio
         val finalCementContent =
-            if (isWaterReductionSwitchChecked) cementContentWithoutAdmixture else cementContentWithAdmixture
+            if (isWaterReductionSwitchChecked) cementContentWithAdmixture else cementContentWithoutAdmixture
 
         val initialCoarseAggregateProportion = Table5CoarseAggregateRatio.get(
             aggregateSize = maxAggregateSize,
@@ -152,6 +153,87 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
                 mixProportion = mixProportion,
             )
         )
+
+        Log.d("MixDesignCalc", "gradeOfConcrete = $gradeOfConcrete")
+        Log.d("MixDesignCalc", "exposureEnvironment = $exposureEnvironment")
+        Log.d("MixDesignCalc", "slumpValue = $slumpValue")
+        Log.d("MixDesignCalc", "maxAggregateSize = $maxAggregateSize")
+        Log.d("MixDesignCalc", "zoneOfFineAggregate = $zoneOfFineAggregate")
+        Log.d("MixDesignCalc", "typeOfConcrete = $typeOfConcrete")
+        Log.d("MixDesignCalc", "gradeOfCement = $gradeOfCement")
+        Log.d("MixDesignCalc", "spGravityOfWater = $spGravityOfWater")
+        Log.d("MixDesignCalc", "spGravityOfCement = $spGravityOfCement")
+        Log.d("MixDesignCalc", "spGravityOfFineAggregate = $spGravityOfFineAggregate")
+        Log.d("MixDesignCalc", "spGravityOfCoarseAggregate = $spGravityOfCoarseAggregate")
+        Log.d("MixDesignCalc", "isWaterReductionSwitchChecked = $isWaterReductionSwitchChecked")
+        Log.d("MixDesignCalc", "waterReductionPercentage = $waterReductionPercentage")
+        Log.d("MixDesignCalc", "typeOfConcreteApplication = $typeOfConcreteApplication")
+        Log.d("MixDesignCalc", "spGravityOfAdmixture = $spGravityOfAdmixture")
+        Log.d("MixDesignCalc", "dosageOfAdmixture = $dosageOfAdmixture")
+
+        Log.d("MixDesignCalc", "valueOfX = $valueOfX")
+        Log.d("MixDesignCalc", "standardDeviation = $standardDeviation")
+        Log.d("MixDesignCalc", "compressiveStrength = $compressiveStrength")
+        Log.d("MixDesignCalc", "targetStrength = $targetStrength")
+
+        Log.d("MixDesignCalc", "maxWaterCementRatio = $maxWaterCementRatio")
+        Log.d("MixDesignCalc", "freeWaterCementRatio = $freeWaterCementRatio")
+        Log.d("MixDesignCalc", "maxWaterContent = $maxWaterContent")
+        Log.d("MixDesignCalc", "percentChangeInWaterContent = $percentChangeInWaterContent")
+        Log.d("MixDesignCalc", "waterContentForGivenSlump = $waterContentForGivenSlump")
+        Log.d("MixDesignCalc", "finalWaterContent = $finalWaterContent")
+
+        Log.d("MixDesignCalc", "minCementContent = $minCementContent")
+        Log.d("MixDesignCalc", "maxCementContent = $maxCementContent")
+        Log.d("MixDesignCalc", "cementContentWithoutAdmixture = $cementContentWithoutAdmixture")
+        Log.d("MixDesignCalc", "cementContentWithAdmixture = $cementContentWithAdmixture")
+        Log.d("MixDesignCalc", "finalCementContent = $finalCementContent")
+
+        Log.d(
+            "MixDesignCalc",
+            "initialCoarseAggregateProportion = $initialCoarseAggregateProportion"
+        )
+        Log.d(
+            "MixDesignCalc",
+            "adjustedCoarseAggregateProportion = $adjustedCoarseAggregateProportion"
+        )
+        Log.d("MixDesignCalc", "finalCoarseAggregateProportion = $finalCoarseAggregateProportion")
+        Log.d("MixDesignCalc", "fineAggregateProportion = $fineAggregateProportion")
+
+        Log.d("MixDesignCalc", "volumeOfConcrete = $volumeOfConcrete")
+        Log.d("MixDesignCalc", "volumeOfCement = $volumeOfCement")
+        Log.d("MixDesignCalc", "volumeOfWater = $volumeOfWater")
+        Log.d("MixDesignCalc", "volumeOfAdmixture = $volumeOfAdmixture")
+
+        Log.d("MixDesignCalc", "entrappedAirPercentage = $entrappedAirPercentage")
+        Log.d("MixDesignCalc", "volumeOfAir = $volumeOfAir")
+
+        Log.d("MixDesignCalc", "volumeOfTotalAggregate = $volumeOfTotalAggregate")
+        Log.d("MixDesignCalc", "volumeOfCoarseAggregate = $volumeOfCoarseAggregate")
+        Log.d("MixDesignCalc", "volumeOfFineAggregate = $volumeOfFineAggregate")
+
+        Log.d("MixDesignCalc", "finalCoarseAggregateContent = $finalCoarseAggregateContent")
+        Log.d("MixDesignCalc", "finalFineAggregateContent = $finalFineAggregateContent")
+        Log.d("MixDesignCalc", "finalAdmixtureContent = $finalAdmixtureContent")
+
+        Log.d("MixDesignCalc", "mixProportion = $mixProportion")
+
+        Log.d(
+            "MixDesignCalc", "MixDesignResultHolder Result = ${
+                MixDesignResult(
+                    maxCementContent = maxCementContent.toDouble(),
+                    minCementContent = minCementContent.toDouble(),
+                    cementContentWithAdmixture = cementContentWithAdmixture,
+                    cementContentWithoutAdmixture = cementContentWithoutAdmixture,
+                    finalCementContent = finalCementContent,
+                    finalCoarseAggregateContent = finalCoarseAggregateContent,
+                    finalFineAggregateContent = finalFineAggregateContent,
+                    finalAdmixtureContent = finalAdmixtureContent,
+                    mixProportion = mixProportion
+                )
+            }"
+        )
+
     }
 
     private fun adjustCoarseAggregateProportion(
