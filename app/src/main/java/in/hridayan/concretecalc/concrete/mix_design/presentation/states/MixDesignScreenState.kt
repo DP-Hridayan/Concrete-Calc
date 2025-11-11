@@ -1,5 +1,7 @@
 package `in`.hridayan.concretecalc.concrete.mix_design.presentation.states
 
+import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
+
 data class MixDesignScreenState(
     val projectName: InputFieldStates.ProjectName = InputFieldStates.ProjectName(),
     val gradeOfConcrete: InputFieldStates.GradeOfConcrete = InputFieldStates.GradeOfConcrete(),
@@ -16,5 +18,7 @@ data class MixDesignScreenState(
     val spGravityOfAggregate: InputFieldStates.SpGravityOfAggregate = InputFieldStates.SpGravityOfAggregate(),
     val waterReductionPercentage: InputFieldStates.WaterReductionPercentage = InputFieldStates.WaterReductionPercentage(),
     val spGravityOfAdmixture: InputFieldStates.SpGravityOfAdmixture = InputFieldStates.SpGravityOfAdmixture(),
-    val dosageOfAdmixture: InputFieldStates.DosageOfAdmixture = InputFieldStates.DosageOfAdmixture()
+    val dosageOfAdmixture: InputFieldStates.DosageOfAdmixture = InputFieldStates.DosageOfAdmixture(),
+    val isWaterReductionSwitchChecked : Boolean = false,
+    val typeOfConcreteApplication: TypeOfConcreteApplication = TypeOfConcreteApplication.PUMPABLE
 )

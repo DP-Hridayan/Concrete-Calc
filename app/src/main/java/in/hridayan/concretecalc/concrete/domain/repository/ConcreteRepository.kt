@@ -12,5 +12,4 @@ interface ConcreteRepository {
     suspend fun getExposureConditions(): List<ExposureCondition>
     val mixDesignResult: Flow<MixDesignResult?>
     suspend fun calculateMixDesign(input: MixDesignScreenState)
-
 }

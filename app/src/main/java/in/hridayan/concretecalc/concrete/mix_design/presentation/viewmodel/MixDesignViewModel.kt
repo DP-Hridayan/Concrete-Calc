@@ -37,14 +37,8 @@ class MixDesignViewModel @Inject constructor(
     private val _exposureConditions = MutableStateFlow<List<ExposureCondition>>(emptyList())
     val exposureConditions = _exposureConditions.asStateFlow()
 
-    private val _selectedTypeOfApplication = MutableStateFlow(TypeOfConcreteApplication.PUMPABLE)
-    val selectedTypeOfApplication = _selectedTypeOfApplication
-
     private val _states = MutableStateFlow<MixDesignScreenState>(MixDesignScreenState())
     val states: StateFlow<MixDesignScreenState> = _states
-
-    private val _isWaterReductionSwitchChecked = MutableStateFlow(false)
-    val isWaterReductionSwitchChecked = _isWaterReductionSwitchChecked
 
     val mixResult = concreteRepository.mixDesignResult
 
@@ -143,7 +137,7 @@ class MixDesignViewModel @Inject constructor(
     }
 
     fun setTypeOfConcreteApplication(type: TypeOfConcreteApplication) {
-        _selectedTypeOfApplication.value = type
+        _states.update { it.copy(typeOfConcreteApplication = type) }
     }
 
     fun setGradeOfCementField(grade: CementGrades) = with(_states.value) {
@@ -237,7 +231,9 @@ class MixDesignViewModel @Inject constructor(
     }
 
     fun toggleWaterReductionSwitch() {
-        _isWaterReductionSwitchChecked.value = !isWaterReductionSwitchChecked.value
+        _states.update {
+            it.copy(isWaterReductionSwitchChecked = !it.isWaterReductionSwitchChecked)
+        }
     }
 
     fun checkEmptyFields(): Boolean = with(_states.value) {
@@ -331,7 +327,7 @@ class MixDesignViewModel @Inject constructor(
                 )
             )
             return true
-        } else if (_isWaterReductionSwitchChecked.value && this.waterReductionPercentage.fieldValue.text.isEmpty()) {
+        } else if (this.isWaterReductionSwitchChecked && this.waterReductionPercentage.fieldValue.text.isEmpty()) {
             _states.value = this.copy(
                 waterReductionPercentage = this.waterReductionPercentage.copy(
                     isError = true,
@@ -339,7 +335,7 @@ class MixDesignViewModel @Inject constructor(
                 )
             )
             return true
-        } else if (_isWaterReductionSwitchChecked.value && this.spGravityOfAdmixture.fieldValue.text.isEmpty()) {
+        } else if (this.isWaterReductionSwitchChecked && this.spGravityOfAdmixture.fieldValue.text.isEmpty()) {
             _states.value = this.copy(
                 spGravityOfAdmixture = this.spGravityOfAdmixture.copy(
                     isError = true,
@@ -347,7 +343,7 @@ class MixDesignViewModel @Inject constructor(
                 )
             )
             return true
-        } else if (_isWaterReductionSwitchChecked.value && this.dosageOfAdmixture.fieldValue.text.isEmpty()) {
+        } else if (this.isWaterReductionSwitchChecked && this.dosageOfAdmixture.fieldValue.text.isEmpty()) {
             _states.value = this.copy(
                 dosageOfAdmixture = this.dosageOfAdmixture.copy(
                     isError = true,

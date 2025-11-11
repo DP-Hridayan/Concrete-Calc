@@ -86,6 +86,9 @@ object Table5ExposureRequirements {
         ),
     )
 
-    fun get(exposureEnvironment: ExposureEnvironment): ExposureRequirements? =
-        entries.find { it.exposureEnvironment == exposureEnvironment }
+    fun get(
+        exposureEnvironment: ExposureEnvironment,
+        concreteType: ConcreteType
+    ): ExposureRequirements? =
+        entries.find { it.exposureEnvironment == exposureEnvironment && it.concreteType == concreteType }
 }

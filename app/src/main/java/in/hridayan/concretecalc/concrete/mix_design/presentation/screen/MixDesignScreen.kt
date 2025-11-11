@@ -43,7 +43,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +68,8 @@ import `in`.hridayan.concretecalc.core.presentation.components.button.BackButton
 import `in`.hridayan.concretecalc.core.presentation.components.card.IconWithTextCard
 import `in`.hridayan.concretecalc.core.presentation.components.card.PillShapedCard
 import `in`.hridayan.concretecalc.core.presentation.components.text.AutoResizeableText
+import `in`.hridayan.concretecalc.navigation.LocalNavController
+import `in`.hridayan.concretecalc.navigation.NavRoutes
 
 @Composable
 fun MixDesignScreen(
@@ -76,10 +77,10 @@ fun MixDesignScreen(
     viewModel: MixDesignViewModel = hiltViewModel()
 ) {
     val weakHaptic = LocalWeakHaptic.current
-    val isWaterReductionSwitchChecked by viewModel.isWaterReductionSwitchChecked.collectAsState()
+    val navController = LocalNavController.current
+    val states by viewModel.states.collectAsState()
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    var shouldShowResults by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -93,7 +94,7 @@ fun MixDesignScreen(
 
                     val fontSize = lerp(expandedFontSize, collapsedFontSize, collapsedFraction)
                     Text(
-                        modifier = modifier.basicMarquee(),
+                        modifier = Modifier.basicMarquee(),
                         text = stringResource(R.string.mix_design),
                         maxLines = 1,
                         fontSize = fontSize,
@@ -113,7 +114,7 @@ fun MixDesignScreen(
                         return@ExtendedFloatingActionButton
                     }
                     viewModel.calculate()
-                    shouldShowResults = true
+                    navController.navigate(NavRoutes.ResultsScreen)
                     weakHaptic()
                 },
                 modifier = Modifier.padding(bottom = 20.dp)
@@ -293,7 +294,7 @@ fun MixDesignScreen(
             }
 
             item {
-                if (isWaterReductionSwitchChecked) {
+                if (states.isWaterReductionSwitchChecked) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -324,16 +325,6 @@ fun MixDesignScreen(
             }
 
             item {
-                if (shouldShowResults) {
-                    Results(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 15.dp, vertical = 10.dp)
-                    )
-                }
-            }
-
-            item {
                 Spacer(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -342,29 +333,6 @@ fun MixDesignScreen(
             }
         }
     }
-}
-
-@Composable
-fun Results(
-    modifier: Modifier = Modifier,
-    viewModel: MixDesignViewModel = hiltViewModel()
-) {
-    val result by viewModel.mixResult.collectAsState(null)
-
-    result?.let {
-        Text(
-            text = "Result: ${it.valueOfX}" +
-                    "Result2: ${it.standardDeviation}" +
-                    "Result3: ${it.targetStrength}" +
-                    "Result4: ${it.maxWaterCementRatio}" +
-                    "Result5: ${it.freeWaterCementRatio}" +
-                    "Result6: ${it.maxWaterContentForNominalSizeAnd50Slump}" +
-                    "Result7: ${it.changeInWaterContentPercentDueToSlump}" +
-                    "Result8: ${it.waterContentForGivenSlump}",
-            modifier = modifier
-        )
-    }
-
 }
 
 @Composable
@@ -404,7 +372,9 @@ fun ConcreteGradeDropdown(
             isError = states.gradeOfConcrete.isError,
             label = {
                 Text(
-                    text = if (states.gradeOfConcrete.isError) states.gradeOfConcrete.errorMessage else label) },
+                    text = if (states.gradeOfConcrete.isError) states.gradeOfConcrete.errorMessage else label
+                )
+            },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
@@ -877,7 +847,7 @@ fun TypeOfConcreteApplication(
 ) {
     val weakHaptic = LocalWeakHaptic.current
     val options = TypeOfConcreteApplication.entries
-    val selected by viewModel.selectedTypeOfApplication.collectAsState()
+    val states by viewModel.states.collectAsState()
 
     Column(
         modifier = modifier,
@@ -893,7 +863,7 @@ fun TypeOfConcreteApplication(
         Row(horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)) {
             options.forEach { option ->
                 ToggleButton(
-                    checked = selected == option,
+                    checked = states.typeOfConcreteApplication == option,
                     onCheckedChange = {
                         weakHaptic()
                         viewModel.setTypeOfConcreteApplication(option)
@@ -924,7 +894,7 @@ fun WaterReductionSwitch(
     modifier: Modifier = Modifier,
     viewModel: MixDesignViewModel = hiltViewModel()
 ) {
-    val isWaterReductionSwitchChecked by viewModel.isWaterReductionSwitchChecked.collectAsState()
+    val states by viewModel.states.collectAsState()
     val weakHaptic = LocalWeakHaptic.current
 
     PillShapedCard(
@@ -951,14 +921,14 @@ fun WaterReductionSwitch(
             )
 
             Switch(
-                checked = isWaterReductionSwitchChecked,
+                checked = states.isWaterReductionSwitchChecked,
                 onCheckedChange = {
                     viewModel.toggleWaterReductionSwitch()
                     weakHaptic()
                 },
                 thumbContent = {
                     Icon(
-                        imageVector = if (isWaterReductionSwitchChecked) Icons.Rounded.Check else Icons.Rounded.Close,
+                        imageVector = if (states.isWaterReductionSwitchChecked) Icons.Rounded.Check else Icons.Rounded.Close,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
