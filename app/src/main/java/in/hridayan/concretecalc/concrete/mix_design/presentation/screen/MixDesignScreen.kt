@@ -45,6 +45,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,6 +74,7 @@ import `in`.hridayan.concretecalc.core.presentation.components.card.PillShapedCa
 import `in`.hridayan.concretecalc.core.presentation.components.text.AutoResizeableText
 import `in`.hridayan.concretecalc.navigation.LocalNavController
 import `in`.hridayan.concretecalc.navigation.NavRoutes
+import kotlinx.coroutines.launch
 
 @Composable
 fun MixDesignScreen(
@@ -81,6 +83,7 @@ fun MixDesignScreen(
 ) {
     val weakHaptic = LocalWeakHaptic.current
     val navController = LocalNavController.current
+    val coroutineScope = rememberCoroutineScope()
     val states by viewModel.states.collectAsState()
     val listState = rememberLazyListState()
     val scrollBehavior =
@@ -122,6 +125,12 @@ fun MixDesignScreen(
             ExtendedFloatingActionButton(
                 onClick = {
                     if (viewModel.checkEmptyFields()) {
+                        coroutineScope.launch {
+                            val firstErrorIndex = getFirstErrorIndex(states = states)
+                            if (firstErrorIndex != null) {
+                                listState.animateScrollToItem(firstErrorIndex)
+                            }
+                        }
                         return@ExtendedFloatingActionButton
                     }
                     viewModel.calculate()
@@ -1071,7 +1080,7 @@ fun DosageOfAdmixture(
     )
 }
 
-private fun getFirstErrorIndex(states : MixDesignScreenState): Int? {
+private fun getFirstErrorIndex(states: MixDesignScreenState): Int? {
     return when {
         states.gradeOfConcrete.isError -> 3
         states.volumeOfConcrete.isError -> 4
