@@ -42,8 +42,6 @@ class MixDesignViewModel @Inject constructor(
 
     val mixResult = concreteRepository.mixDesignResult
 
-    val materialCosts = concreteRepository.materialCosts
-
     fun calculate() {
         viewModelScope.launch {
             concreteRepository.calculateMixDesign(_states.value)
@@ -375,6 +373,28 @@ class MixDesignViewModel @Inject constructor(
             )
             return true
         } else false
+    }
+
+    fun calculateCementPrice(grade: CementGrades, bags: Double): Double {
+        val pricePerBag = when (grade) {
+            CementGrades.OPC_33 -> 290
+            CementGrades.OPC_43 -> 330
+            CementGrades.OPC_53 -> 400
+            CementGrades.PPC -> 370
+            CementGrades.PSC -> 350
+        }
+
+        return pricePerBag * bags
+    }
+
+    fun calculateGravelPrice(size: Int, volume: Double): Double {
+        val pricePerVolume = when (size) {
+            10 -> 1450.00
+            20 -> 1350.00
+            40 -> 1200.00
+            else -> 0.00
+        }
+        return pricePerVolume * volume
     }
 
     fun loadGrades() {

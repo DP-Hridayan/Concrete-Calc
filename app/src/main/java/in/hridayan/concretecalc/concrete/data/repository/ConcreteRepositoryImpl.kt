@@ -15,9 +15,7 @@ import `in`.hridayan.concretecalc.concrete.data.is_codes._456_2000.Table5Exposur
 import `in`.hridayan.concretecalc.concrete.data.is_codes._456_2000.getWCratioForTargetStrength
 import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
 import `in`.hridayan.concretecalc.concrete.domain.repository.ConcreteRepository
-import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MaterialCost
 import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResult
-import `in`.hridayan.concretecalc.concrete.mix_design.domain.model.MaterialCostHolder
 import `in`.hridayan.concretecalc.concrete.mix_design.domain.model.MixDesignResultHolder
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.states.MixDesignScreenState
 import kotlinx.coroutines.flow.Flow
@@ -39,9 +37,6 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
 
     override val mixDesignResult: Flow<MixDesignResult?>
         get() = MixDesignResultHolder.result
-
-    override val materialCosts: Flow<MaterialCost?>
-        get() = MaterialCostHolder.costs
 
     override suspend fun calculateMixDesign(input: MixDesignScreenState) {
         val gradeOfConcrete = input.gradeOfConcrete.fieldValue.text
@@ -150,15 +145,20 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
             MixDesignResult(
                 volumeOfConcrete = volumeOfConcrete,
                 concreteGrade = gradeOfConcrete,
-                cementGrades = gradeOfCement,
+                cementGrade = gradeOfCement,
                 maxCementContent = maxCementContent.toDouble(),
                 minCementContent = minCementContent.toDouble(),
+                maxAggregateSize = maxAggregateSize,
                 cementContentWithAdmixture = cementContentWithAdmixture,
                 cementContentWithoutAdmixture = cementContentWithoutAdmixture,
-                finalWaterContent = finalWaterContent * volumeOfConcrete,
-                finalCementContent = finalCementContent * volumeOfConcrete,
-                finalCoarseAggregateContent = finalCoarseAggregateContent * volumeOfConcrete,
-                finalFineAggregateContent = finalFineAggregateContent * volumeOfConcrete,
+                finalWaterInKg = finalWaterContent * volumeOfConcrete,
+                finalWaterVolume = volumeOfWater * volumeOfConcrete,
+                finalCementInKg = finalCementContent * volumeOfConcrete,
+                finalCementVolume = volumeOfCement * volumeOfConcrete,
+                finalCoarseAggregateInKg = finalCoarseAggregateContent * volumeOfConcrete,
+                finalCoarseAggregateVolume = volumeOfCoarseAggregate * volumeOfConcrete,
+                finalFineAggregateInKg = finalFineAggregateContent * volumeOfConcrete,
+                finalFineAggregateVolume = volumeOfFineAggregate * volumeOfConcrete,
                 finalAdmixtureContent = finalAdmixtureContent * volumeOfConcrete,
                 mixProportion = mixProportion,
             )
@@ -227,22 +227,6 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
         Log.d("MixDesignCalc", "finalAdmixtureContent = $finalAdmixtureContent")
 
         Log.d("MixDesignCalc", "mixProportion = $mixProportion")
-
-        Log.d(
-            "MixDesignCalc", "MixDesignResultHolder Result = ${
-                MixDesignResult(
-                    maxCementContent = maxCementContent.toDouble(),
-                    minCementContent = minCementContent.toDouble(),
-                    cementContentWithAdmixture = cementContentWithAdmixture,
-                    cementContentWithoutAdmixture = cementContentWithoutAdmixture,
-                    finalCementContent = finalCementContent,
-                    finalCoarseAggregateContent = finalCoarseAggregateContent,
-                    finalFineAggregateContent = finalFineAggregateContent,
-                    finalAdmixtureContent = finalAdmixtureContent,
-                    mixProportion = mixProportion
-                )
-            }"
-        )
 
     }
 

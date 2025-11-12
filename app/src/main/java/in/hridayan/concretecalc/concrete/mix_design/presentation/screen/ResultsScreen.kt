@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -27,11 +29,15 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +56,7 @@ import `in`.hridayan.concretecalc.R
 import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
 import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResult
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.model.MaterialBreakDownData
+import `in`.hridayan.concretecalc.concrete.mix_design.presentation.model.MaterialCostEstimate
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.viewmodel.MixDesignViewModel
 import `in`.hridayan.concretecalc.core.common.LocalWeakHaptic
 import `in`.hridayan.concretecalc.core.presentation.components.button.BackButton
@@ -129,10 +136,40 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
             }
 
             item {
+                AutoResizeableText(
+                    text = stringResource(R.string.material_breakdown),
+                    style = MaterialTheme.typography.titleLargeEmphasized,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp, bottom = 15.dp)
+                )
+            }
+
+            item {
                 MaterialBreakDown(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 25.dp)
+                        .padding(bottom = 25.dp)
+                )
+            }
+
+            item {
+                AutoResizeableText(
+                    text = stringResource(R.string.cost_estimate),
+                    style = MaterialTheme.typography.titleLargeEmphasized,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp, bottom = 15.dp)
+                )
+            }
+
+            item {
+                CostEstimate(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 25.dp)
                 )
             }
         }
@@ -150,22 +187,22 @@ fun MixProportionPie(
     val chartData = listOf(
         PieChartData(
             stringResource(R.string.cement),
-            results?.finalCementContent?.toFloat() ?: 2f,
+            results?.finalCementInKg?.toFloat() ?: 2f,
             Color(0xFFA5A5A5)
         ),
         PieChartData(
             stringResource(R.string.fine),
-            results?.finalFineAggregateContent?.toFloat() ?: 3f,
+            results?.finalFineAggregateInKg?.toFloat() ?: 3f,
             Color(0xFFEADDAF)
         ),
         PieChartData(
             stringResource(R.string.coarse),
-            results?.finalCoarseAggregateContent?.toFloat() ?: 4f,
+            results?.finalCoarseAggregateInKg?.toFloat() ?: 4f,
             Color(0xFF8B7E74)
         ),
         PieChartData(
             stringResource(R.string.water),
-            results?.finalWaterContent?.toFloat() ?: 2f,
+            results?.finalWaterInKg?.toFloat() ?: 2f,
             Color(0xFFAADAFF)
         )
     )
@@ -258,17 +295,22 @@ fun MaterialBreakDown(
     modifier: Modifier = Modifier,
     viewModel: MixDesignViewModel = hiltViewModel()
 ) {
+    val weakHaptic = LocalWeakHaptic.current
     val results by viewModel.mixResult.collectAsState(initial = MixDesignResult())
+    val options = listOf(stringResource(R.string.volume), stringResource(R.string.weight))
+    var checked by rememberSaveable { mutableStateOf(0) }
 
-    val materials = results?.finalCementContent?.toInt()?.let {
+    val materials = results?.finalCementInKg?.toInt()?.let {
         listOf(
             MaterialBreakDownData(
                 icon = painterResource(R.drawable.ic_shopping_bag),
                 iconBg = Color(0xFFA5A5A5),
                 iconTint = Color(0xFFFFFFFF),
                 title = stringResource(R.string.cement),
-                subtitle = results?.cementGrades?.gradeName ?: CementGrades.OPC_33.gradeName,
-                valueString = ((it.plus(49)) / 50).toString() + " bags"
+                subtitle = results?.cementGrade?.gradeName ?: CementGrades.OPC_33.gradeName,
+                valueString = if (checked == 0) {
+                    ((it.plus(49)) / 50).toString() + " bags"
+                } else String.format("%.1f kg", results?.finalCementInKg ?: 0.0)
             ),
             MaterialBreakDownData(
                 icon = painterResource(R.drawable.ic_grain),
@@ -276,7 +318,11 @@ fun MaterialBreakDown(
                 iconTint = Color(0xFF5E5846),
                 title = stringResource(R.string.sand),
                 subtitle = stringResource(R.string.fine_aggregate),
-                valueString = "${results?.finalFineAggregateContent?.toInt()} kg"
+                valueString = if (checked == 0) {
+                    String.format("%.1f m³", results?.finalFineAggregateVolume ?: 0.0)
+                } else {
+                    String.format("%.1f kg", results?.finalFineAggregateInKg ?: 0.0)
+                }
             ),
             MaterialBreakDownData(
                 icon = painterResource(R.drawable.ic_landscape),
@@ -284,7 +330,11 @@ fun MaterialBreakDown(
                 iconTint = Color(0xFFFFFFFF),
                 title = stringResource(R.string.gravel),
                 subtitle = stringResource(R.string.coarse_aggregate),
-                valueString = "${results?.finalCoarseAggregateContent?.toInt()} kg"
+                valueString = if (checked == 0) {
+                    String.format("%.1f m³", results?.finalCoarseAggregateVolume ?: 0.0)
+                } else {
+                    String.format("%.1f kg", results?.finalCoarseAggregateInKg ?: 0.0)
+                }
             ),
             MaterialBreakDownData(
                 icon = painterResource(R.drawable.ic_water_drop),
@@ -292,7 +342,11 @@ fun MaterialBreakDown(
                 iconTint = Color(0xFF4E6375),
                 title = stringResource(R.string.water),
                 subtitle = stringResource(R.string.clean_potable),
-                valueString = "${results?.finalWaterContent?.toInt()} litres"
+                valueString = if (checked == 0) {
+                    String.format("%.1f litres", results?.finalWaterVolume ?: 0.0)
+                } else {
+                    String.format("%.1f kg", results?.finalWaterInKg ?: 0.0)
+                }
             ),
         )
     }
@@ -301,6 +355,31 @@ fun MaterialBreakDown(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 15.dp),
+            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+        ) {
+            options.forEachIndexed { i, option ->
+                ToggleButton(
+                    checked = i == checked,
+                    onCheckedChange = {
+                        weakHaptic()
+                        checked = i
+                    },
+                    modifier = Modifier.weight(1f),
+                    shapes = when (i) {
+                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                        1 -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                    }
+                ) {
+                    AutoResizeableText(option)
+                }
+            }
+        }
+
         materials?.forEachIndexed { i, material ->
             val cornerShape = getRoundedShape(i, materials.size)
 
@@ -350,6 +429,86 @@ fun MaterialBreakDown(
                     AutoResizeableText(
                         text = material.valueString,
                         style = MaterialTheme.typography.titleLargeEmphasized,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CostEstimate(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel()
+) {
+    val results by viewModel.mixResult.collectAsState(initial = MixDesignResult())
+
+    val cementBagsNo = (results?.finalCementInKg?.plus(49))?.div(50) ?: 0.00
+    val cementPrice =
+        viewModel.calculateCementPrice(results?.cementGrade ?: CementGrades.OPC_33, cementBagsNo)
+
+    val gravelVolume = results?.finalCoarseAggregateVolume ?: 0.00
+    val size = results?.maxAggregateSize ?: 0
+    val gravelPrice = viewModel.calculateGravelPrice(size = size, volume = gravelVolume)
+
+    val sandPrice = results?.let { it.finalFineAggregateVolume * 2000.00 } ?: 0.00
+
+    val totalEstimatedCost = cementPrice + sandPrice + gravelPrice
+
+    val costs = listOf(
+        MaterialCostEstimate(title = stringResource(R.string.cement_cost), cost = cementPrice),
+        MaterialCostEstimate(title = stringResource(R.string.sand_cost), cost = sandPrice),
+        MaterialCostEstimate(title = stringResource(R.string.gravel_cost), cost = gravelPrice),
+        MaterialCostEstimate(
+            title = stringResource(R.string.total_estimated_cost),
+            cost = totalEstimatedCost
+        )
+    )
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        costs.forEachIndexed { i, cost ->
+            val cornerShape = getRoundedShape(i, costs.size)
+
+            val cardColors = if (i == costs.lastIndex) {
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            } else {
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            RoundedCornerCard(
+                modifier = Modifier.fillMaxWidth(),
+                roundedShape = cornerShape,
+                colors = cardColors,
+                paddingValues = PaddingValues(vertical = 1.dp, horizontal = 0.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(15.dp)
+                ) {
+                    AutoResizeableText(
+                        text = cost.title,
+                        style = MaterialTheme.typography.titleMediumEmphasized,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    )
+
+                    AutoResizeableText(
+                        text = "₹ %.2f".format(cost.cost),
+                        style = MaterialTheme.typography.titleMediumEmphasized,
                         fontWeight = FontWeight.Bold
                     )
                 }
