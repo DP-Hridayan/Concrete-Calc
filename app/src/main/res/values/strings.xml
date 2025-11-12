@@ -20,6 +20,8 @@
     <string name="grade_of_cement">Grade of Cement</string>
     <string name="grade_of_concrete">Grade of Concrete</string>
     <string name="gravel">Gravel</string>
+    <string name="save_result">Save result</string>
+    <string name="cancel">Cancel</string>
     <string name="gravel_cost">Gravel cost</string>
     <string name="material_breakdown">Material breakdown</string>
     <string name="material_properties_aggregate">Material properties - Aggregate</string>
@@ -27,8 +29,10 @@
     <string name="mix_design">Mix Design</string>
     <string name="nominal_max_aggregate_size">Nominal max aggregate size</string>
     <string name="project_and_strength_requirements">Project &amp; strength requirements</string>
-    <string name="project_name">Project Name/ID (Optional)</string>
+    <string name="project_name">Project Name/ID</string>
     <string name="sand">Sand</string>
+    <string name="success">Success</string>
+    <string name="failed">Failed</string>
     <string name="save">Save</string>
     <string name="there_are_errors_in_input">There are errors in input</string>
     <string name="value_must_lie_between_a_and_b">Value must lie between %1$s and %2$s</string>

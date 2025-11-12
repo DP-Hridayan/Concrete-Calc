@@ -11,6 +11,7 @@ import `in`.hridayan.concretecalc.concrete.mix_design.data.converter.CementGrade
 data class MixDesignResultEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    val projectName: String = "",
     val volumeOfConcrete: Double = 0.00,
     val concreteGrade: String = "",
     val cementGrade: CementGrades = CementGrades.OPC_33,

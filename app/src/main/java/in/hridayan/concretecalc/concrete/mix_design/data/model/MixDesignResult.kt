@@ -3,6 +3,7 @@ package `in`.hridayan.concretecalc.concrete.mix_design.data.model
 import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
 
 data class MixDesignResult(
+    val projectName: String = "",
     val volumeOfConcrete: Double = 0.00,
     val concreteGrade: String = "",
     val cementGrade: CementGrades = CementGrades.OPC_33,
@@ -10,7 +11,7 @@ data class MixDesignResult(
     val minCementContent: Double = 0.00,
     val cementContentWithoutAdmixture: Double = 0.00,
     val cementContentWithAdmixture: Double = 0.00,
-    val maxAggregateSize : Int = 0,
+    val maxAggregateSize: Int = 0,
     val finalCementInKg: Double = 0.00,
     val finalCementVolume: Double = 0.00,
     val finalWaterInKg: Double = 0.00,

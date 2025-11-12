@@ -1,6 +1,7 @@
 package `in`.hridayan.concretecalc.concrete.mix_design.presentation.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -483,9 +485,15 @@ class MixDesignViewModel @Inject constructor(
         return pricePerVolume * volume
     }
 
-    fun saveMixDesignResult(result: MixDesignResultEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            mixDesignRepository.saveResult(result)
+    suspend fun saveMixDesignResult(result: MixDesignResultEntity): Boolean {
+        return try {
+            withContext(Dispatchers.IO) {
+                mixDesignRepository.saveResult(result)
+            }
+            true
+        } catch (e: Exception) {
+            Log.d("MixDesignViewModel", "saveMixDesignResult: ${e.message}")
+            false
         }
     }
 

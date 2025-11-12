@@ -23,7 +23,9 @@ object DatabaseModule {
             context,
             MixDesignDatabase::class.java,
             "mix_design_db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
     }
 
     @Provides

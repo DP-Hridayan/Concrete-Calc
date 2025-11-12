@@ -39,6 +39,7 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
         get() = MixDesignResultHolder.result
 
     override suspend fun calculateMixDesign(input: MixDesignScreenState) {
+        val projectName = input.projectName.fieldValue.text
         val gradeOfConcrete = input.gradeOfConcrete.fieldValue.text
         val volumeOfConcrete = input.volumeOfConcrete.fieldValue.text.toDoubleOrNull() ?: 1.00
         val exposureEnvironment = input.exposureCondition.environment
@@ -119,7 +120,7 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
         val volumeOfCement = finalCementContent / (spGravityOfCement * 1000)
         val volumeOfWater = finalWaterContent / (spGravityOfWater * 1000)
         val volumeOfAdmixture =
-            ((dosageOfAdmixture / 100) * finalCementContent) / (spGravityOfAdmixture * 1000)
+            if (isWaterReductionSwitchChecked) ((dosageOfAdmixture / 100) * finalCementContent) / (spGravityOfAdmixture * 1000) else 0.00
 
         val entrappedAirPercentage =
             Table3ApproximateAirContent.get(maxAggregateSize)?.entrappedAirPercentage ?: 0.00
@@ -143,6 +144,7 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
 
         MixDesignResultHolder.setResult(
             MixDesignResult(
+                projectName = projectName,
                 volumeOfConcrete = volumeOfConcrete,
                 concreteGrade = gradeOfConcrete,
                 cementGrade = gradeOfCement,

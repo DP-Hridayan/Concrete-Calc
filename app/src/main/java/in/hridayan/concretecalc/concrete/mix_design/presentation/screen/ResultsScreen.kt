@@ -40,6 +40,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -61,6 +63,7 @@ import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
 import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResult
 import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResultEntity
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.components.dialog.CostEstimationWarningDialog
+import `in`.hridayan.concretecalc.concrete.mix_design.presentation.components.dialog.SaveResultDialog
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.model.MaterialBreakDownData
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.model.MaterialCostEstimate
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.viewmodel.MixDesignViewModel
@@ -71,10 +74,14 @@ import `in`.hridayan.concretecalc.core.presentation.components.chart.PieChart
 import `in`.hridayan.concretecalc.core.presentation.components.shape.getRoundedShape
 import `in`.hridayan.concretecalc.core.presentation.components.text.AutoResizeableText
 import `in`.hridayan.concretecalc.core.presentation.model.PieChartData
+import `in`.hridayan.concretecalc.core.presentation.utils.ToastUtils.makeToast
+import kotlinx.coroutines.launch
 
 @Composable
 fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
+    val context = LocalContext.current
     val results by viewModel.mixResult.collectAsState(initial = MixDesignResult())
+    val coroutineScope = rememberCoroutineScope()
 
     val entity = MixDesignResultEntity(
         volumeOfConcrete = results?.volumeOfConcrete ?: 0.00,
@@ -99,6 +106,7 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     var showCostEstimationWarningDialog by rememberSaveable { mutableStateOf(false) }
+    var showSaveResultDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -127,7 +135,7 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
-                    viewModel.saveMixDesignResult(entity)
+                    showSaveResultDialog = true
                     weakHaptic()
                 },
                 modifier = Modifier.padding(bottom = 20.dp)
@@ -238,9 +246,11 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
             }
 
             item {
-                Spacer(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp))
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                )
             }
         }
     }
@@ -248,8 +258,22 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
     if (showCostEstimationWarningDialog) {
         CostEstimationWarningDialog(onDismiss = { showCostEstimationWarningDialog = false })
     }
-}
 
+    if (showSaveResultDialog) {
+        SaveResultDialog(
+            onDismiss = { showSaveResultDialog = false },
+            onSave = { projectName ->
+                coroutineScope.launch {
+                    val saved =
+                        viewModel.saveMixDesignResult(entity.copy(projectName = projectName))
+                    if (saved) makeToast(context, context.getString(R.string.success))
+                    else makeToast(context, context.getString(R.string.failed))
+                }
+            },
+            textInField = results?.projectName ?: ""
+        )
+    }
+}
 
 @Composable
 fun MixProportionPie(
