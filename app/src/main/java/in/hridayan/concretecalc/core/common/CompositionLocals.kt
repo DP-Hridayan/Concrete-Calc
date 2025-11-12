@@ -8,11 +8,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalView
+import `in`.hridayan.concretecalc.core.presentation.utils.HapticUtils.errorHaptic
 import `in`.hridayan.concretecalc.core.presentation.utils.HapticUtils.strongHaptic
 import `in`.hridayan.concretecalc.core.presentation.utils.HapticUtils.weakHaptic
 
 val LocalWeakHaptic = staticCompositionLocalOf<() -> Unit> { {} }
 val LocalStrongHaptic = staticCompositionLocalOf<() -> Unit> { {} }
+val LocalErrorHaptic = staticCompositionLocalOf<() -> Unit> { {} }
 
 @Composable
 fun CompositionLocals(
@@ -38,9 +40,18 @@ fun CompositionLocals(
         }
     }
 
+    val errorHaptic = remember(isHapticEnabled, view) {
+        {
+            if (isHapticEnabled) {
+                view.errorHaptic()
+            }
+        }
+    }
+
     CompositionLocalProvider(
         LocalWeakHaptic provides weakHaptic,
         LocalStrongHaptic provides strongHaptic,
+        LocalErrorHaptic provides errorHaptic
     ) {
         content()
     }

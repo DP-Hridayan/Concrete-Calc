@@ -29,8 +29,11 @@
     <string name="project_and_strength_requirements">Project &amp; strength requirements</string>
     <string name="project_name">Project Name/ID (Optional)</string>
     <string name="sand">Sand</string>
+    <string name="ok">OK</string>
     <string name="volume">Volume</string>
     <string name="weight">Weight</string>
+    <string name="cost_estimation_warning">The total estimated cost does not include cost related to water and admixture since they can vary greatly around places.</string>
+    <string name="warning">Warning!</string>
     <string name="cost_estimation">Cost estimation</string>
     <string name="des_cost_estimation">Estimate concrete material costs</string>
     <string name="des_mix_design">Calculate concrete mix proportions</string>

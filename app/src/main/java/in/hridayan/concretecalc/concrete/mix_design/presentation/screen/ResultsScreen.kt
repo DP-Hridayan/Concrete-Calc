@@ -4,6 +4,8 @@ package `in`.hridayan.concretecalc.concrete.mix_design.presentation.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,6 +58,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import `in`.hridayan.concretecalc.R
 import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
 import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResult
+import `in`.hridayan.concretecalc.concrete.mix_design.presentation.components.dialog.CostEstimationWarningDialog
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.model.MaterialBreakDownData
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.model.MaterialCostEstimate
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.viewmodel.MixDesignViewModel
@@ -73,6 +77,7 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
     val weakHaptic = LocalWeakHaptic.current
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    var showCostEstimationWarningDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -155,14 +160,35 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
             }
 
             item {
-                AutoResizeableText(
-                    text = stringResource(R.string.cost_estimate),
-                    style = MaterialTheme.typography.titleLargeEmphasized,
-                    fontWeight = FontWeight.Bold,
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 20.dp, bottom = 15.dp)
-                )
+                        .padding(top = 20.dp, bottom = 15.dp),
+                    horizontalArrangement = Arrangement.spacedBy(15.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AutoResizeableText(
+                        text = stringResource(R.string.cost_estimate),
+                        style = MaterialTheme.typography.titleLargeEmphasized,
+                        fontWeight = FontWeight.Bold,
+                    )
+
+                    Icon(
+                        painter = painterResource(R.drawable.ic_info),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable(
+                                enabled = true,
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
+                                    weakHaptic()
+                                    showCostEstimationWarningDialog = true
+                                }),
+                    )
+                }
             }
 
             item {
@@ -173,6 +199,10 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
                 )
             }
         }
+    }
+
+    if (showCostEstimationWarningDialog) {
+        CostEstimationWarningDialog(onDismiss = { showCostEstimationWarningDialog = false })
     }
 }
 

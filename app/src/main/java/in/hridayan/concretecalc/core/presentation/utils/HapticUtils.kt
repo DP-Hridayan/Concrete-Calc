@@ -12,4 +12,8 @@ object HapticUtils {
     fun View.strongHaptic() {
         performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
     }
+
+    fun View.errorHaptic() {
+        performHapticFeedback(HapticFeedbackConstants.REJECT)
+    }
 }

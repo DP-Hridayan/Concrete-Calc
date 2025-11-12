@@ -67,6 +67,7 @@ import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
 import `in`.hridayan.concretecalc.concrete.data.model.ZonesOfFineAggregate
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.states.MixDesignScreenState
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.viewmodel.MixDesignViewModel
+import `in`.hridayan.concretecalc.core.common.LocalErrorHaptic
 import `in`.hridayan.concretecalc.core.common.LocalWeakHaptic
 import `in`.hridayan.concretecalc.core.presentation.components.button.BackButton
 import `in`.hridayan.concretecalc.core.presentation.components.card.IconWithTextCard
@@ -82,6 +83,7 @@ fun MixDesignScreen(
     viewModel: MixDesignViewModel = hiltViewModel()
 ) {
     val weakHaptic = LocalWeakHaptic.current
+    val errorHaptic = LocalErrorHaptic.current
     val navController = LocalNavController.current
     val coroutineScope = rememberCoroutineScope()
     val states by viewModel.states.collectAsState()
@@ -131,8 +133,10 @@ fun MixDesignScreen(
                                 listState.animateScrollToItem(firstErrorIndex)
                             }
                         }
+                        errorHaptic()
                         return@ExtendedFloatingActionButton
                     }
+
                     viewModel.calculate()
                     navController.navigate(NavRoutes.ResultsScreen)
                     weakHaptic()
