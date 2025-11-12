@@ -28,4 +28,16 @@
     <string name="water_reduction_percentage">Water reduction percentage</string>
     <string name="field_cannot_be_empty">Field cannot be empty</string>
     <string name="calculation_results">Calculation results</string>
+    <string name="cement">Cement</string>
+    <string name="water">Water</string>
+    <string name="fine">Fine</string>
+    <string name="coarse">Coarse</string>
+    <string name="fine_aggregate">Fine aggregate</string>
+    <string name="coarse_aggregate">Coarse aggregate</string>
+    <string name="admixture">Admixture</string>
+    <string name="sand">Sand</string>
+    <string name="gravel">Gravel</string>
+    <string name="clean_potable">Clean, Potable</string>
+    <string name="volume_of_concrete">Volume of concrete</string>
+    <string name="volume_of_concrete_based_on_input">Volume of concrete based on input</string>
 </resources>

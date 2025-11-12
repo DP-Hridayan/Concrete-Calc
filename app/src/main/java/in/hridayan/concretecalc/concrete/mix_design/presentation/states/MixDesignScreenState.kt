@@ -5,6 +5,7 @@ import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
 data class MixDesignScreenState(
     val projectName: InputFieldStates.ProjectName = InputFieldStates.ProjectName(),
     val gradeOfConcrete: InputFieldStates.GradeOfConcrete = InputFieldStates.GradeOfConcrete(),
+    val volumeOfConcrete: InputFieldStates.VolumeOfConcrete = InputFieldStates.VolumeOfConcrete(),
     val exposureCondition: InputFieldStates.ExposureCondition = InputFieldStates.ExposureCondition(),
     val slumpValue: InputFieldStates.SlumpValue = InputFieldStates.SlumpValue(),
     val maxAggregateSize: InputFieldStates.MaxAggregateSize = InputFieldStates.MaxAggregateSize(),

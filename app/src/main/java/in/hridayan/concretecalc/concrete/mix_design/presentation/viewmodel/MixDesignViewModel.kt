@@ -42,6 +42,8 @@ class MixDesignViewModel @Inject constructor(
 
     val mixResult = concreteRepository.mixDesignResult
 
+    val materialCosts = concreteRepository.materialCosts
+
     fun calculate() {
         viewModelScope.launch {
             concreteRepository.calculateMixDesign(_states.value)
@@ -72,6 +74,19 @@ class MixDesignViewModel @Inject constructor(
             it.copy(
                 gradeOfConcrete = it.gradeOfConcrete.copy(
                     fieldValue = value,
+                    isError = false
+                )
+            )
+        }
+    }
+
+    fun setVolumeOfConcreteField(value: TextFieldValue) {
+        _states.update {
+            it.copy(
+                volumeOfConcrete = it.volumeOfConcrete.copy(
+                    fieldValue = value.copy(
+                        selection = TextRange(value.text.length)
+                    ),
                     isError = false
                 )
             )
@@ -242,6 +257,14 @@ class MixDesignViewModel @Inject constructor(
         if (this.gradeOfConcrete.fieldValue.text.isEmpty()) {
             _states.value = this.copy(
                 gradeOfConcrete = this.gradeOfConcrete.copy(
+                    isError = true,
+                    errorMessage = fieldBlankErrorMessage
+                )
+            )
+            return true
+        } else if (this.volumeOfConcrete.fieldValue.text.isEmpty()) {
+            _states.value = this.copy(
+                volumeOfConcrete = this.volumeOfConcrete.copy(
                     isError = true,
                     errorMessage = fieldBlankErrorMessage
                 )

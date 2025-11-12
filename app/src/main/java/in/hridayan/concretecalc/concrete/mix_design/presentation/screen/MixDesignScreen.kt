@@ -172,6 +172,14 @@ fun MixDesignScreen(
             }
 
             item {
+                VolumeOfConcreteInput(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp, vertical = 10.dp)
+                )
+            }
+
+            item {
                 TypeOfConcreteDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -406,6 +414,40 @@ fun ConcreteGradeDropdown(
     }
 }
 
+@Composable
+fun VolumeOfConcreteInput(
+    modifier: Modifier = Modifier,
+    viewModel: MixDesignViewModel = hiltViewModel(),
+    label: String = stringResource(R.string.volume_of_concrete)
+) {
+    val states by viewModel.states.collectAsState()
+
+    OutlinedTextField(
+        value = states.volumeOfConcrete.fieldValue,
+        onValueChange = { input ->
+            if (input.text.all { it.isDigit() }) {
+                viewModel.setVolumeOfConcreteField(TextFieldValue(input.text))
+            }
+        },
+        isError = states.volumeOfConcrete.isError,
+        label = {
+            Text(
+                text = if (states.volumeOfConcrete.isError) states.volumeOfConcrete.errorMessage else label
+            )
+        },
+        trailingIcon = {
+            Text(
+                text = "m³",
+                modifier = Modifier.padding(end = 10.dp)
+            )
+        },
+        singleLine = true,
+        modifier = modifier.fillMaxWidth(),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number
+        )
+    )
+}
 
 @Composable
 fun ExposureEnvironmentDropdown(

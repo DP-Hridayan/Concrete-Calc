@@ -15,7 +15,9 @@ import `in`.hridayan.concretecalc.concrete.data.is_codes._456_2000.Table5Exposur
 import `in`.hridayan.concretecalc.concrete.data.is_codes._456_2000.getWCratioForTargetStrength
 import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
 import `in`.hridayan.concretecalc.concrete.domain.repository.ConcreteRepository
+import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MaterialCost
 import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResult
+import `in`.hridayan.concretecalc.concrete.mix_design.domain.model.MaterialCostHolder
 import `in`.hridayan.concretecalc.concrete.mix_design.domain.model.MixDesignResultHolder
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.states.MixDesignScreenState
 import kotlinx.coroutines.flow.Flow
@@ -38,8 +40,12 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
     override val mixDesignResult: Flow<MixDesignResult?>
         get() = MixDesignResultHolder.result
 
+    override val materialCosts: Flow<MaterialCost?>
+        get() = MaterialCostHolder.costs
+
     override suspend fun calculateMixDesign(input: MixDesignScreenState) {
         val gradeOfConcrete = input.gradeOfConcrete.fieldValue.text
+        val volumeOfConcrete = input.volumeOfConcrete.fieldValue.text.toDoubleOrNull() ?: 1.00
         val exposureEnvironment = input.exposureCondition.environment
         val slumpValue = input.slumpValue.fieldValue.text.toDoubleOrNull()
             ?: throw IllegalArgumentException("Slump value is missing")
@@ -61,15 +67,16 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
                 ?: throw IllegalArgumentException("Specific gravity of coarse aggregate missing")
         val isWaterReductionSwitchChecked = input.isWaterReductionSwitchChecked
         val waterReductionPercentage =
-            input.waterReductionPercentage.fieldValue.text.toDouble()
+            input.waterReductionPercentage.fieldValue.text.toDoubleOrNull() ?: 0.00
 
         val typeOfConcreteApplication = input.typeOfConcreteApplication
-        val spGravityOfAdmixture = input.spGravityOfAdmixture.fieldValue.text.toDouble()
-        val dosageOfAdmixture = input.dosageOfAdmixture.fieldValue.text.toDouble()
+        val spGravityOfAdmixture =
+            input.spGravityOfAdmixture.fieldValue.text.toDoubleOrNull() ?: 0.00
+        val dosageOfAdmixture = input.dosageOfAdmixture.fieldValue.text.toDoubleOrNull() ?: 0.00
 
         val valueOfX = Table1ValueOfX.get(gradeOfConcrete)?.valueX ?: 0.00
         val standardDeviation = Table2AssumedStandardDeviation.get(gradeOfConcrete)?.valueSD ?: 0.00
-        val compressiveStrength = gradeOfConcrete.removePrefix("M").toDouble()
+        val compressiveStrength = gradeOfConcrete.removePrefix("M").toDoubleOrNull() ?: 0.00
         val targetStrength =
             max(compressiveStrength + 1.65 * standardDeviation, compressiveStrength + valueOfX)
 
@@ -114,7 +121,6 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
 
         val fineAggregateProportion = 1 - finalCoarseAggregateProportion
 
-        val volumeOfConcrete = 1 //m³
         val volumeOfCement = finalCementContent / (spGravityOfCement * 1000)
         val volumeOfWater = finalWaterContent / (spGravityOfWater * 1000)
         val volumeOfAdmixture =
@@ -125,7 +131,7 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
         val volumeOfAir = entrappedAirPercentage / 100
 
         val volumeOfTotalAggregate =
-            volumeOfConcrete - (volumeOfWater + volumeOfCement + volumeOfAir + volumeOfAdmixture)
+            1 - (volumeOfWater + volumeOfCement + volumeOfAir + if (isWaterReductionSwitchChecked) volumeOfAdmixture else 0.0)
         val volumeOfCoarseAggregate = volumeOfTotalAggregate * finalCoarseAggregateProportion
         val volumeOfFineAggregate = volumeOfTotalAggregate * fineAggregateProportion
 
@@ -142,14 +148,18 @@ class ConcreteRepositoryImpl @Inject constructor() : ConcreteRepository {
 
         MixDesignResultHolder.setResult(
             MixDesignResult(
+                volumeOfConcrete = volumeOfConcrete,
+                concreteGrade = gradeOfConcrete,
+                cementGrades = gradeOfCement,
                 maxCementContent = maxCementContent.toDouble(),
                 minCementContent = minCementContent.toDouble(),
                 cementContentWithAdmixture = cementContentWithAdmixture,
                 cementContentWithoutAdmixture = cementContentWithoutAdmixture,
-                finalCementContent = finalCementContent,
-                finalCoarseAggregateContent = finalCoarseAggregateContent,
-                finalFineAggregateContent = finalFineAggregateContent,
-                finalAdmixtureContent = finalAdmixtureContent,
+                finalWaterContent = finalWaterContent * volumeOfConcrete,
+                finalCementContent = finalCementContent * volumeOfConcrete,
+                finalCoarseAggregateContent = finalCoarseAggregateContent * volumeOfConcrete,
+                finalFineAggregateContent = finalFineAggregateContent * volumeOfConcrete,
+                finalAdmixtureContent = finalAdmixtureContent * volumeOfConcrete,
                 mixProportion = mixProportion,
             )
         )

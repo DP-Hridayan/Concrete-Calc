@@ -20,6 +20,11 @@ sealed class InputFieldStates() {
         val errorMessage: String = ""
     ) : InputFieldStates()
 
+    data class VolumeOfConcrete(
+        val fieldValue: TextFieldValue = TextFieldValue("1"),
+        val isError: Boolean = false,
+        val errorMessage: String = ""
+    )
     data class ExposureCondition(
         val fieldValue: TextFieldValue = TextFieldValue(""),
         val isError: Boolean = false,
@@ -61,7 +66,7 @@ sealed class InputFieldStates() {
     ) : InputFieldStates()
 
     data class SpGravityOfWater(
-        val fieldValue: TextFieldValue = TextFieldValue(""),
+        val fieldValue: TextFieldValue = TextFieldValue("1"),
         val isError: Boolean = false,
         val errorMessage: String = ""
     ) : InputFieldStates()
