@@ -26,6 +26,7 @@ import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +59,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import `in`.hridayan.concretecalc.R
 import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
 import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResult
+import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResultEntity
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.components.dialog.CostEstimationWarningDialog
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.model.MaterialBreakDownData
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.model.MaterialCostEstimate
@@ -73,6 +75,25 @@ import `in`.hridayan.concretecalc.core.presentation.model.PieChartData
 @Composable
 fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
     val results by viewModel.mixResult.collectAsState(initial = MixDesignResult())
+
+    val entity = MixDesignResultEntity(
+        volumeOfConcrete = results?.volumeOfConcrete ?: 0.00,
+        concreteGrade = results?.concreteGrade ?: "",
+        cementGrade = results?.cementGrade ?: CementGrades.OPC_43,
+        maxAggregateSize = results?.maxAggregateSize ?: 0,
+        cementContentWithAdmixture = results?.cementContentWithAdmixture ?: 0.00,
+        cementContentWithoutAdmixture = results?.cementContentWithoutAdmixture ?: 0.00,
+        finalWaterInKg = results?.finalWaterInKg ?: 0.00,
+        finalWaterVolume = results?.finalWaterVolume ?: 0.00,
+        finalCementInKg = results?.finalCementInKg ?: 0.00,
+        finalCementVolume = results?.finalCementVolume ?: 0.00,
+        finalCoarseAggregateInKg = results?.finalCoarseAggregateInKg ?: 0.00,
+        finalCoarseAggregateVolume = results?.finalCoarseAggregateVolume ?: 0.00,
+        finalFineAggregateInKg = results?.finalFineAggregateInKg ?: 0.00,
+        finalFineAggregateVolume = results?.finalFineAggregateVolume ?: 0.00,
+        finalAdmixtureContent = results?.finalAdmixtureContent ?: 0.00,
+        mixProportion = results?.mixProportion ?: "",
+    )
 
     val weakHaptic = LocalWeakHaptic.current
     val scrollBehavior =
@@ -102,6 +123,23 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
                 scrollBehavior = scrollBehavior,
 
                 )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = {
+                    viewModel.saveMixDesignResult(entity)
+                    weakHaptic()
+                },
+                modifier = Modifier.padding(bottom = 20.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_save),
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                AutoResizeableText(stringResource(R.string.save))
+            }
+
         },
     ) { innerPadding ->
 
@@ -197,6 +235,12 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
                         .fillMaxWidth()
                         .padding(bottom = 25.dp)
                 )
+            }
+
+            item {
+                Spacer(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp))
             }
         }
     }

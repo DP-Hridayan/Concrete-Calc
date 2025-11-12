@@ -16,8 +16,11 @@ import `in`.hridayan.concretecalc.concrete.data.model.ExposureEnvironment
 import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
 import `in`.hridayan.concretecalc.concrete.data.model.ZonesOfFineAggregate
 import `in`.hridayan.concretecalc.concrete.domain.repository.ConcreteRepository
+import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResultEntity
 import `in`.hridayan.concretecalc.concrete.mix_design.domain.model.MixDesignResultHolder
+import `in`.hridayan.concretecalc.concrete.mix_design.domain.repository.MixDesignRepository
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.states.MixDesignScreenState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MixDesignViewModel @Inject constructor(
     private val concreteRepository: ConcreteRepository,
+    private val mixDesignRepository: MixDesignRepository,
     @param:ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
@@ -79,13 +83,18 @@ class MixDesignViewModel @Inject constructor(
     }
 
     fun setVolumeOfConcreteField(value: TextFieldValue) {
+        val errorMessage = appContext.getString(R.string.value_must_be_greater_than_one)
+        val numericValue = value.text.toDoubleOrNull()
+        val isError = if (numericValue == null) false else numericValue < 1
+
         _states.update {
             it.copy(
                 volumeOfConcrete = it.volumeOfConcrete.copy(
                     fieldValue = value.copy(
                         selection = TextRange(value.text.length)
                     ),
-                    isError = false
+                    isError = isError,
+                    errorMessage = errorMessage
                 )
             )
         }
@@ -104,11 +113,17 @@ class MixDesignViewModel @Inject constructor(
     }
 
     fun setSlumpValueField(value: TextFieldValue) {
+        val errorMessage =
+            appContext.getString(R.string.value_must_lie_between_a_and_b, "25", "300")
+        val numericValue = value.text.toDoubleOrNull()
+        val isError = if (numericValue == null) false else numericValue !in 25.00..300.00
+
         _states.update {
             it.copy(
                 slumpValue = it.slumpValue.copy(
                     fieldValue = value.copy(selection = TextRange(value.text.length)),
-                    isError = false
+                    isError = isError,
+                    errorMessage = errorMessage
                 )
             )
         }
@@ -168,76 +183,119 @@ class MixDesignViewModel @Inject constructor(
     }
 
     fun setSpGravityOfWater(value: TextFieldValue) {
+        val errorMessage =
+            appContext.getString(R.string.value_must_lie_between_a_and_b, "0.9", "1.1")
+        val numericValue = value.text.toDoubleOrNull()
+        val isError = if (numericValue == null) false else numericValue !in 0.90..1.10
+
         _states.update {
             it.copy(
                 spGravityOfWater = it.spGravityOfWater.copy(
                     fieldValue = value,
-                    isError = false
+                    isError = isError,
+                    errorMessage = errorMessage
                 )
             )
         }
     }
 
     fun setSpGravityOfCement(value: TextFieldValue) {
+        val errorMessage =
+            appContext.getString(R.string.value_must_lie_between_a_and_b, "2.8", "3.3")
+        val numericValue = value.text.toDoubleOrNull()
+        val isError = if (numericValue == null) false else numericValue !in 2.80..3.30
+
         _states.update {
             it.copy(
                 spGravityOfCement = it.spGravityOfCement.copy(
-                    fieldValue = value, isError = false
+                    fieldValue = value,
+                    isError = isError,
+                    errorMessage = errorMessage
                 )
             )
         }
     }
 
     fun setSpGravityOfFineAggregate(value: TextFieldValue) {
+        val errorMessage =
+            appContext.getString(R.string.value_must_lie_between_a_and_b, "2", "3")
+        val numericValue = value.text.toDoubleOrNull()
+        val isError = if (numericValue == null) false else numericValue !in 2.00..3.00
+
         _states.update {
             it.copy(
                 spGravityOfFineAggregate = it.spGravityOfFineAggregate.copy(
                     fieldValue = value,
-                    isError = false
+                    isError = isError,
+                    errorMessage = errorMessage
                 )
             )
         }
     }
 
     fun setSpGravityOfCoarseAggregate(value: TextFieldValue) {
+        val errorMessage =
+            appContext.getString(R.string.value_must_lie_between_a_and_b, "2", "3")
+        val numericValue = value.text.toDoubleOrNull()
+        val isError = if (numericValue == null) false else numericValue !in 2.00..3.00
+
         _states.update {
             it.copy(
                 spGravityOfCoarseAggregate = it.spGravityOfCoarseAggregate.copy(
                     fieldValue = value,
-                    isError = false
+                    isError = isError,
+                    errorMessage = errorMessage
                 )
             )
         }
     }
 
     fun setWaterReductionPercentage(value: TextFieldValue) {
+        val errorMessage =
+            appContext.getString(R.string.value_must_lie_between_a_and_b, "0", "30")
+        val numericValue = value.text.toDoubleOrNull()
+        val isError = if (numericValue == null) false else numericValue !in 0.00..30.00
+
         _states.update {
             it.copy(
                 waterReductionPercentage = it.waterReductionPercentage.copy(
                     fieldValue = value,
-                    isError = false
+                    isError = isError,
+                    errorMessage = errorMessage
                 )
             )
         }
     }
 
     fun setSpGravityOfAdmixture(value: TextFieldValue) {
+        val errorMessage =
+            appContext.getString(R.string.value_must_lie_between_a_and_b, "0.5", "2")
+        val numericValue = value.text.toDoubleOrNull()
+        val isError = if (numericValue == null) false else numericValue !in 0.5..2.0
+
         _states.update {
             it.copy(
                 spGravityOfAdmixture = it.spGravityOfAdmixture.copy(
                     fieldValue = value,
-                    isError = false
+                    isError = isError,
+                    errorMessage = errorMessage
                 )
             )
         }
     }
 
     fun setDosageOfAdmixture(value: TextFieldValue) {
+        val errorMessage =
+            appContext.getString(R.string.value_must_lie_between_a_and_b, "0.2", "2.5")
+        val numericValue = value.text.toDoubleOrNull()
+        val isError = if (numericValue == null) false else numericValue !in 0.2..2.5
+
         _states.update {
             it.copy(
                 dosageOfAdmixture = it.dosageOfAdmixture.copy(
                     fieldValue = value,
-                    isError = false
+                    isError = isError,
+                    errorMessage = errorMessage
                 )
             )
         }
@@ -251,6 +309,34 @@ class MixDesignViewModel @Inject constructor(
 
     fun checkEmptyFields(): Boolean = with(_states.value) {
         val fieldBlankErrorMessage = appContext.getString(R.string.field_cannot_be_empty)
+
+        if (this.volumeOfConcrete.isError) {
+            return true
+        }
+        if (this.spGravityOfCement.isError) {
+            return true
+        }
+        if (this.spGravityOfWater.isError) {
+            return true
+        }
+        if (this.slumpValue.isError) {
+            return true
+        }
+        if (this.spGravityOfCoarseAggregate.isError) {
+            return true
+        }
+        if (this.spGravityOfFineAggregate.isError) {
+            return true
+        }
+        if (isWaterReductionSwitchChecked && this.waterReductionPercentage.isError) {
+            return true
+        }
+        if (isWaterReductionSwitchChecked && this.spGravityOfAdmixture.isError) {
+            return true
+        }
+        if (isWaterReductionSwitchChecked && this.dosageOfAdmixture.isError) {
+            return true
+        }
 
         if (this.gradeOfConcrete.fieldValue.text.isEmpty()) {
             _states.value = this.copy(
@@ -395,6 +481,12 @@ class MixDesignViewModel @Inject constructor(
             else -> 0.00
         }
         return pricePerVolume * volume
+    }
+
+    fun saveMixDesignResult(result: MixDesignResultEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            mixDesignRepository.saveResult(result)
+        }
     }
 
     fun loadGrades() {

@@ -29,6 +29,10 @@
     <string name="project_and_strength_requirements">Project &amp; strength requirements</string>
     <string name="project_name">Project Name/ID (Optional)</string>
     <string name="sand">Sand</string>
+    <string name="save">Save</string>
+    <string name="there_are_errors_in_input">There are errors in input</string>
+    <string name="value_must_lie_between_a_and_b">Value must lie between %1$s and %2$s</string>
+    <string name="value_must_be_greater_than_one">Value must be greater than 1</string>
     <string name="ok">OK</string>
     <string name="volume">Volume</string>
     <string name="weight">Weight</string>

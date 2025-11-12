@@ -50,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -73,6 +74,8 @@ import `in`.hridayan.concretecalc.core.presentation.components.button.BackButton
 import `in`.hridayan.concretecalc.core.presentation.components.card.IconWithTextCard
 import `in`.hridayan.concretecalc.core.presentation.components.card.PillShapedCard
 import `in`.hridayan.concretecalc.core.presentation.components.text.AutoResizeableText
+import `in`.hridayan.concretecalc.core.presentation.utils.ToastUtils.makeToast
+import `in`.hridayan.concretecalc.core.presentation.utils.isKeyboardVisible
 import `in`.hridayan.concretecalc.navigation.LocalNavController
 import `in`.hridayan.concretecalc.navigation.NavRoutes
 import kotlinx.coroutines.launch
@@ -82,9 +85,11 @@ fun MixDesignScreen(
     modifier: Modifier = Modifier,
     viewModel: MixDesignViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val weakHaptic = LocalWeakHaptic.current
     val errorHaptic = LocalErrorHaptic.current
     val navController = LocalNavController.current
+    val isKeyboardVisible = isKeyboardVisible().value
     val coroutineScope = rememberCoroutineScope()
     val states by viewModel.states.collectAsState()
     val listState = rememberLazyListState()
@@ -124,32 +129,34 @@ fun MixDesignScreen(
                 )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    if (viewModel.checkEmptyFields()) {
-                        coroutineScope.launch {
-                            val firstErrorIndex = getFirstErrorIndex(states = states)
-                            if (firstErrorIndex != null) {
-                                listState.animateScrollToItem(firstErrorIndex)
+            if (!isKeyboardVisible)
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        if (viewModel.checkEmptyFields()) {
+                            coroutineScope.launch {
+                                val firstErrorIndex = getFirstErrorIndex(states = states)
+                                if (firstErrorIndex != null) {
+                                    listState.animateScrollToItem(firstErrorIndex)
+                                }
                             }
+                            errorHaptic()
+                            makeToast(context, context.getString(R.string.there_are_errors_in_input))
+                            return@ExtendedFloatingActionButton
                         }
-                        errorHaptic()
-                        return@ExtendedFloatingActionButton
-                    }
 
-                    viewModel.calculate()
-                    navController.navigate(NavRoutes.ResultsScreen)
-                    weakHaptic()
-                },
-                modifier = Modifier.padding(bottom = 20.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_calculate),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                AutoResizeableText(stringResource(R.string.calculate))
-            }
+                        viewModel.calculate()
+                        navController.navigate(NavRoutes.ResultsScreen)
+                        weakHaptic()
+                    },
+                    modifier = Modifier.padding(bottom = 20.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_calculate),
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    AutoResizeableText(stringResource(R.string.calculate))
+                }
 
         }) { innerPadding ->
         LazyColumn(
@@ -361,7 +368,7 @@ fun MixDesignScreen(
                 Spacer(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(25.dp)
+                        .height(60.dp)
                 )
             }
         }
@@ -1087,20 +1094,20 @@ fun DosageOfAdmixture(
 private fun getFirstErrorIndex(states: MixDesignScreenState): Int? {
     return when {
         states.gradeOfConcrete.isError -> 3
-        states.volumeOfConcrete.isError -> 4
+        states.volumeOfConcrete.isError && states.volumeOfConcrete.fieldValue.text.isEmpty() -> 4
         states.typeOfConcrete.isError -> 5
         states.exposureCondition.isError -> 6
         states.gradeOfCement.isError -> 8
-        states.spGravityOfCement.isError -> 9
-        states.spGravityOfWater.isError -> 9
+        states.spGravityOfCement.isError && states.spGravityOfCement.fieldValue.text.isEmpty() -> 9
+        states.spGravityOfWater.isError && states.spGravityOfWater.fieldValue.text.isEmpty() -> 9
         states.maxAggregateSize.isError -> 11
         states.zoneOfFineAggregate.isError -> 12
-        states.slumpValue.isError -> 13
-        states.spGravityOfCoarseAggregate.isError -> 14
-        states.spGravityOfFineAggregate.isError -> 14
-        states.waterReductionPercentage.isError -> 15
-        states.spGravityOfAdmixture.isError -> 16
-        states.dosageOfAdmixture.isError -> 17
+        states.slumpValue.isError && states.slumpValue.fieldValue.text.isEmpty() -> 13
+        states.spGravityOfCoarseAggregate.isError && states.spGravityOfCoarseAggregate.fieldValue.text.isEmpty() -> 14
+        states.spGravityOfFineAggregate.isError && states.spGravityOfFineAggregate.fieldValue.text.isEmpty() -> 14
+        states.waterReductionPercentage.isError && states.waterReductionPercentage.fieldValue.text.isEmpty() -> 15
+        states.spGravityOfAdmixture.isError && states.spGravityOfAdmixture.fieldValue.text.isEmpty() -> 16
+        states.dosageOfAdmixture.isError && states.dosageOfAdmixture.fieldValue.text.isEmpty() -> 17
         else -> null
     }
 }
