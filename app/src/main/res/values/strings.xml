@@ -22,6 +22,8 @@
     <string name="gravel">Gravel</string>
     <string name="save_result">Save result</string>
     <string name="cancel">Cancel</string>
+    <string name="saved_on">Saved on</string>
+    <string name="recent_activity">Recent activity</string>
     <string name="gravel_cost">Gravel cost</string>
     <string name="material_breakdown">Material breakdown</string>
     <string name="material_properties_aggregate">Material properties - Aggregate</string>

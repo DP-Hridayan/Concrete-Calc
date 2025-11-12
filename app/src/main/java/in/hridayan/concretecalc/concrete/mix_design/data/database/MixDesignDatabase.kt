@@ -8,7 +8,7 @@ import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResult
 
 @Database(
     entities = [MixDesignResultEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(CementGradeConverter::class)

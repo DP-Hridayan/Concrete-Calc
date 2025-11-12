@@ -17,17 +17,22 @@ import `in`.hridayan.concretecalc.concrete.data.model.ExposureEnvironment
 import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
 import `in`.hridayan.concretecalc.concrete.data.model.ZonesOfFineAggregate
 import `in`.hridayan.concretecalc.concrete.domain.repository.ConcreteRepository
+import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResult
 import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResultEntity
 import `in`.hridayan.concretecalc.concrete.mix_design.domain.model.MixDesignResultHolder
 import `in`.hridayan.concretecalc.concrete.mix_design.domain.repository.MixDesignRepository
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.states.MixDesignScreenState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -60,6 +65,11 @@ class MixDesignViewModel @Inject constructor(
 
     init {
         loadGrades()
+        viewModelScope.launch {
+            mixDesignRepository.getAllResults().collect { results ->
+                Log.d("MixDesignViewModel", "All results from DB: $results")
+            }
+        }
     }
 
     fun setProjectNameField(value: TextFieldValue) {
@@ -488,12 +498,52 @@ class MixDesignViewModel @Inject constructor(
     suspend fun saveMixDesignResult(result: MixDesignResultEntity): Boolean {
         return try {
             withContext(Dispatchers.IO) {
-                mixDesignRepository.saveResult(result)
+                val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+
+                mixDesignRepository.saveResult(result.copy(saveDate = currentDate))
+                Log.d("MixDesign", "Saving result: $result")
             }
             true
         } catch (e: Exception) {
             Log.d("MixDesignViewModel", "saveMixDesignResult: ${e.message}")
             false
+        }
+    }
+
+
+    val allResults: StateFlow<List<MixDesignResultEntity>> = mixDesignRepository.getAllResults()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun setResultData(entity: MixDesignResultEntity?) {
+        viewModelScope.launch {
+
+            Log.d("MixDesignViewModel", "${allResults.value}")
+
+            val result = MixDesignResult(
+                projectName = entity?.projectName ?: "",
+                volumeOfConcrete = entity?.volumeOfConcrete ?: 0.00,
+                concreteGrade = entity?.concreteGrade ?: "",
+                cementGrade = entity?.cementGrade ?: CementGrades.OPC_43,
+                maxAggregateSize = entity?.maxAggregateSize ?: 0,
+                cementContentWithAdmixture = entity?.cementContentWithAdmixture ?: 0.00,
+                cementContentWithoutAdmixture = entity?.cementContentWithoutAdmixture ?: 0.00,
+                finalWaterInKg = entity?.finalWaterInKg ?: 0.00,
+                finalWaterVolume = entity?.finalWaterVolume ?: 0.00,
+                finalCementInKg = entity?.finalCementInKg ?: 0.00,
+                finalCementVolume = entity?.finalCementVolume ?: 0.00,
+                finalCoarseAggregateInKg = entity?.finalCoarseAggregateInKg ?: 0.00,
+                finalCoarseAggregateVolume = entity?.finalCoarseAggregateVolume ?: 0.00,
+                finalFineAggregateInKg = entity?.finalFineAggregateInKg ?: 0.00,
+                finalFineAggregateVolume = entity?.finalFineAggregateVolume ?: 0.00,
+                finalAdmixtureContent = entity?.finalAdmixtureContent ?: 0.00,
+                mixProportion = entity?.mixProportion ?: ""
+            )
+
+            MixDesignResultHolder.setResult(result)
         }
     }
 

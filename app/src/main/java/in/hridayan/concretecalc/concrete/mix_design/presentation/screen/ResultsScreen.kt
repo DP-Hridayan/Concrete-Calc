@@ -75,6 +75,8 @@ import `in`.hridayan.concretecalc.core.presentation.components.shape.getRoundedS
 import `in`.hridayan.concretecalc.core.presentation.components.text.AutoResizeableText
 import `in`.hridayan.concretecalc.core.presentation.model.PieChartData
 import `in`.hridayan.concretecalc.core.presentation.utils.ToastUtils.makeToast
+import `in`.hridayan.concretecalc.navigation.LocalNavController
+import `in`.hridayan.concretecalc.navigation.NavRoutes
 import kotlinx.coroutines.launch
 
 @Composable
@@ -82,6 +84,8 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val results by viewModel.mixResult.collectAsState(initial = MixDesignResult())
     val coroutineScope = rememberCoroutineScope()
+    val navController = LocalNavController.current
+    val previousRoute = navController.previousBackStackEntry?.destination?.route
 
     val entity = MixDesignResultEntity(
         volumeOfConcrete = results?.volumeOfConcrete ?: 0.00,
@@ -133,6 +137,7 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
                 )
         },
         floatingActionButton = {
+            if (previousRoute?.contains(NavRoutes.HomeScreen::class.qualifiedName ?: "") == false)
             ExtendedFloatingActionButton(
                 onClick = {
                     showSaveResultDialog = true

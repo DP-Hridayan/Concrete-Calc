@@ -12,6 +12,7 @@ data class MixDesignResultEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val projectName: String = "",
+    val saveDate: String = "",
     val volumeOfConcrete: Double = 0.00,
     val concreteGrade: String = "",
     val cementGrade: CementGrades = CementGrades.OPC_33,
