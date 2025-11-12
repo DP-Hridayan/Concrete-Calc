@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
@@ -39,6 +40,7 @@ import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +64,7 @@ import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
 import `in`.hridayan.concretecalc.concrete.data.model.ConcreteType
 import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
 import `in`.hridayan.concretecalc.concrete.data.model.ZonesOfFineAggregate
+import `in`.hridayan.concretecalc.concrete.mix_design.presentation.states.MixDesignScreenState
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.viewmodel.MixDesignViewModel
 import `in`.hridayan.concretecalc.core.common.LocalWeakHaptic
 import `in`.hridayan.concretecalc.core.presentation.components.button.BackButton
@@ -79,8 +82,16 @@ fun MixDesignScreen(
     val weakHaptic = LocalWeakHaptic.current
     val navController = LocalNavController.current
     val states by viewModel.states.collectAsState()
+    val listState = rememberLazyListState()
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
+    LaunchedEffect(states) {
+        val firstErrorIndex = getFirstErrorIndex(states = states)
+        if (firstErrorIndex != null) {
+            listState.animateScrollToItem(firstErrorIndex)
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -129,6 +140,7 @@ fun MixDesignScreen(
 
         }) { innerPadding ->
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxWidth()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -1057,4 +1069,25 @@ fun DosageOfAdmixture(
             keyboardType = KeyboardType.Number
         )
     )
+}
+
+private fun getFirstErrorIndex(states : MixDesignScreenState): Int? {
+    return when {
+        states.gradeOfConcrete.isError -> 3
+        states.volumeOfConcrete.isError -> 4
+        states.typeOfConcrete.isError -> 5
+        states.exposureCondition.isError -> 6
+        states.gradeOfCement.isError -> 8
+        states.spGravityOfCement.isError -> 9
+        states.spGravityOfWater.isError -> 9
+        states.maxAggregateSize.isError -> 11
+        states.zoneOfFineAggregate.isError -> 12
+        states.slumpValue.isError -> 13
+        states.spGravityOfCoarseAggregate.isError -> 14
+        states.spGravityOfFineAggregate.isError -> 14
+        states.waterReductionPercentage.isError -> 15
+        states.spGravityOfAdmixture.isError -> 16
+        states.dosageOfAdmixture.isError -> 17
+        else -> null
+    }
 }
