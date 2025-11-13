@@ -3,3 +3,17 @@
 </p>
 
 > **Concrete calc** is a fully-featured **Concrete Mix Design calculator** app with **Material Design 3 UI**, letting you calculate and  save your mix design projects and analyze them, packed in a beautiful and smart interface
+
+</br>
+
+> ## License
+
+```
+Designed and developed by DP Hridayan @2025
+This project is licensed under the GNU General Public License v3.0
+```
+>[!NOTE]
+>
+>Full license copy [here](LICENSE.md)
+
+</br>
