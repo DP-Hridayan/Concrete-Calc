@@ -6,7 +6,7 @@
 
 </br>
 
-> ## License
+## License
 
 ```
 Designed and developed by DP Hridayan @2025
