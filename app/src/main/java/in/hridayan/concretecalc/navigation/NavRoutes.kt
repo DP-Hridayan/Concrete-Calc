@@ -12,4 +12,7 @@ sealed class NavRoutes {
     @Serializable
     object ResultsScreen
 
+    @Serializable
+    object SavedResultsScreen
+
 }

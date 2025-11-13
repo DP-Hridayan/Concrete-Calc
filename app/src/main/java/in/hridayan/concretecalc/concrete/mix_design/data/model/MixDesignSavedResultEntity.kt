@@ -6,9 +6,9 @@ import androidx.room.TypeConverters
 import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
 import `in`.hridayan.concretecalc.concrete.mix_design.data.converter.CementGradeConverter
 
-@Entity(tableName = "mix_design_results")
+@Entity(tableName = "mix_design_saved_results")
 @TypeConverters(CementGradeConverter::class)
-data class MixDesignResultEntity(
+data class MixDesignSavedResultEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val projectName: String = "",

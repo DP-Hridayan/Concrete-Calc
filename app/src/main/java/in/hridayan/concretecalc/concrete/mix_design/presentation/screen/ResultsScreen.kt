@@ -2,6 +2,7 @@
 
 package `in`.hridayan.concretecalc.concrete.mix_design.presentation.screen
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -36,6 +37,7 @@ import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,8 +62,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import `in`.hridayan.concretecalc.R
 import `in`.hridayan.concretecalc.concrete.data.model.CementGrades
+import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignRecentResultEntity
 import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResult
-import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResultEntity
+import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignSavedResultEntity
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.components.dialog.CostEstimationWarningDialog
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.components.dialog.SaveResultDialog
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.model.MaterialBreakDownData
@@ -75,19 +78,18 @@ import `in`.hridayan.concretecalc.core.presentation.components.shape.getRoundedS
 import `in`.hridayan.concretecalc.core.presentation.components.text.AutoResizeableText
 import `in`.hridayan.concretecalc.core.presentation.model.PieChartData
 import `in`.hridayan.concretecalc.core.presentation.utils.ToastUtils.makeToast
-import `in`.hridayan.concretecalc.navigation.LocalNavController
-import `in`.hridayan.concretecalc.navigation.NavRoutes
 import kotlinx.coroutines.launch
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val results by viewModel.mixResult.collectAsState(initial = MixDesignResult())
     val coroutineScope = rememberCoroutineScope()
-    val navController = LocalNavController.current
-    val previousRoute = navController.previousBackStackEntry?.destination?.route
+    val currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
 
-    val entity = MixDesignResultEntity(
+    val saveEntity = MixDesignSavedResultEntity(
         volumeOfConcrete = results?.volumeOfConcrete ?: 0.00,
         concreteGrade = results?.concreteGrade ?: "",
         cementGrade = results?.cementGrade ?: CementGrades.OPC_43,
@@ -111,6 +113,38 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     var showCostEstimationWarningDialog by rememberSaveable { mutableStateOf(false) }
     var showSaveResultDialog by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        if (!viewModel.getShowSaveButton()) return@LaunchedEffect
+        Log.d("launch", "${viewModel.getShowSaveButton()}")
+
+        val res = results
+        if (res?.mixProportion?.isNotEmpty() == true) {
+            val projectName = results?.projectName ?: ""
+
+            val recentEntity = MixDesignRecentResultEntity(
+                projectName = projectName.ifEmpty { "${results?.concreteGrade} - $currentTime" },
+                volumeOfConcrete = results?.volumeOfConcrete ?: 0.00,
+                concreteGrade = results?.concreteGrade ?: "",
+                cementGrade = results?.cementGrade ?: CementGrades.OPC_43,
+                maxAggregateSize = results?.maxAggregateSize ?: 0,
+                cementContentWithAdmixture = results?.cementContentWithAdmixture ?: 0.00,
+                cementContentWithoutAdmixture = results?.cementContentWithoutAdmixture ?: 0.00,
+                finalWaterInKg = results?.finalWaterInKg ?: 0.00,
+                finalWaterVolume = results?.finalWaterVolume ?: 0.00,
+                finalCementInKg = results?.finalCementInKg ?: 0.00,
+                finalCementVolume = results?.finalCementVolume ?: 0.00,
+                finalCoarseAggregateInKg = results?.finalCoarseAggregateInKg ?: 0.00,
+                finalCoarseAggregateVolume = results?.finalCoarseAggregateVolume ?: 0.00,
+                finalFineAggregateInKg = results?.finalFineAggregateInKg ?: 0.00,
+                finalFineAggregateVolume = results?.finalFineAggregateVolume ?: 0.00,
+                finalAdmixtureContent = results?.finalAdmixtureContent ?: 0.00,
+                mixProportion = results?.mixProportion ?: "",
+            )
+
+            coroutineScope.launch { viewModel.saveRecentMixDesignResult(recentEntity) }
+        }
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -137,21 +171,21 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
                 )
         },
         floatingActionButton = {
-            if (previousRoute?.contains(NavRoutes.HomeScreen::class.qualifiedName ?: "") == false)
-            ExtendedFloatingActionButton(
-                onClick = {
-                    showSaveResultDialog = true
-                    weakHaptic()
-                },
-                modifier = Modifier.padding(bottom = 20.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_save),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                AutoResizeableText(stringResource(R.string.save))
-            }
+            if (viewModel.getShowSaveButton())
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        showSaveResultDialog = true
+                        weakHaptic()
+                    },
+                    modifier = Modifier.padding(bottom = 20.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_save),
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    AutoResizeableText(stringResource(R.string.save))
+                }
 
         },
     ) { innerPadding ->
@@ -270,7 +304,7 @@ fun ResultsScreen(viewModel: MixDesignViewModel = hiltViewModel()) {
             onSave = { projectName ->
                 coroutineScope.launch {
                     val saved =
-                        viewModel.saveMixDesignResult(entity.copy(projectName = projectName))
+                        viewModel.saveMixDesignResult(saveEntity.copy(projectName = projectName))
                     if (saved) makeToast(context, context.getString(R.string.success))
                     else makeToast(context, context.getString(R.string.failed))
                 }
@@ -488,7 +522,7 @@ fun MaterialBreakDown(
 
             RoundedCornerCard(
                 modifier = Modifier.fillMaxWidth(),
-                roundedShape = cornerShape,
+                roundedCornerShape = cornerShape,
                 paddingValues = PaddingValues(vertical = 1.dp, horizontal = 0.dp)
             ) {
                 Row(
@@ -590,7 +624,7 @@ fun CostEstimate(
 
             RoundedCornerCard(
                 modifier = Modifier.fillMaxWidth(),
-                roundedShape = cornerShape,
+                roundedCornerShape = cornerShape,
                 colors = cardColors,
                 paddingValues = PaddingValues(vertical = 1.dp, horizontal = 0.dp)
             ) {

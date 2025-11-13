@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +38,7 @@ import `in`.hridayan.concretecalc.concrete.mix_design.presentation.viewmodel.Mix
 import `in`.hridayan.concretecalc.core.common.LocalWeakHaptic
 import `in`.hridayan.concretecalc.core.presentation.components.card.NavigationCard
 import `in`.hridayan.concretecalc.core.presentation.components.text.AutoResizeableText
+import `in`.hridayan.concretecalc.core.presentation.utils.ToastUtils.makeToast
 import `in`.hridayan.concretecalc.navigation.LocalNavController
 import `in`.hridayan.concretecalc.navigation.NavRoutes
 
@@ -45,10 +47,12 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     mixDesignViewModel: MixDesignViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val weakHaptic = LocalWeakHaptic.current
     val navController = LocalNavController.current
-    val allResults by mixDesignViewModel.allResults.collectAsState()
-    val latestResults = allResults.take(3)
+    val allRecentResults by mixDesignViewModel.allRecentResults.collectAsState()
+    val savedResults by mixDesignViewModel.allSavedResults.collectAsState()
+    val latestResults = allRecentResults.take(3)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -87,13 +91,34 @@ fun HomeScreen(
                         .padding(horizontal = 25.dp)
                 )
             }
+            /**
+             *  item {
+             *                 NavigationCard(
+             *                     title = stringResource(R.string.cost_estimation),
+             *                     description = stringResource(R.string.des_cost_estimation),
+             *                     icon = painterResource(R.drawable.ic_calculate),
+             *                     onClick = { },
+             *                     modifier = Modifier
+             *                         .fillMaxWidth()
+             *                         .padding(horizontal = 25.dp)
+             *                 )
+             *             }
+             */
+
 
             item {
                 NavigationCard(
-                    title = stringResource(R.string.cost_estimation),
-                    description = stringResource(R.string.des_cost_estimation),
-                    icon = painterResource(R.drawable.ic_calculate),
-                    onClick = { },
+                    title = stringResource(R.string.saved_calculations),
+                    description = stringResource(R.string.access_your_saved_calculations),
+                    icon = painterResource(R.drawable.ic_inventory),
+                    onClick = {
+                        if (savedResults.isEmpty()) {
+                            makeToast(context, context.getString(R.string.no_saved_calculations))
+                            return@NavigationCard
+                        }
+                        mixDesignViewModel.setShowSaveButton(false)
+                        navController.navigate(NavRoutes.SavedResultsScreen)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 25.dp)
@@ -121,7 +146,8 @@ fun HomeScreen(
                                 enabled = true,
                                 onClick = {
                                     weakHaptic()
-                                    mixDesignViewModel.setResultData(result)
+                                    mixDesignViewModel.setResultDataFromRecentData(result)
+                                    mixDesignViewModel.setShowSaveButton(false)
                                     navController.navigate(NavRoutes.ResultsScreen)
                                 }
                             )

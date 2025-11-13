@@ -16,12 +16,15 @@
     <string name="exposure_condition">Exposure condition</string>
     <string name="field_cannot_be_empty">Field cannot be empty</string>
     <string name="fine">Fine</string>
+    <string name="no_saved_calculations">No saved calculations</string>
     <string name="fine_aggregate">Fine aggregate</string>
     <string name="grade_of_cement">Grade of Cement</string>
     <string name="grade_of_concrete">Grade of Concrete</string>
     <string name="gravel">Gravel</string>
     <string name="save_result">Save result</string>
     <string name="cancel">Cancel</string>
+    <string name="saved_calculations">Saved calculations</string>
+    <string name="access_your_saved_calculations">Access your saved calculations</string>
     <string name="saved_on">Saved on</string>
     <string name="recent_activity">Recent activity</string>
     <string name="gravel_cost">Gravel cost</string>

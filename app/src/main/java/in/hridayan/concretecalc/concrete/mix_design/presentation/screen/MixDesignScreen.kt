@@ -145,6 +145,7 @@ fun MixDesignScreen(
                         }
 
                         viewModel.calculate()
+                        viewModel.setShowSaveButton(true)
                         navController.navigate(NavRoutes.ResultsScreen)
                         weakHaptic()
                     },

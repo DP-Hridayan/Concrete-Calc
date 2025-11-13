@@ -17,11 +17,13 @@ import `in`.hridayan.concretecalc.concrete.data.model.ExposureEnvironment
 import `in`.hridayan.concretecalc.concrete.data.model.TypeOfConcreteApplication
 import `in`.hridayan.concretecalc.concrete.data.model.ZonesOfFineAggregate
 import `in`.hridayan.concretecalc.concrete.domain.repository.ConcreteRepository
+import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignRecentResultEntity
 import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResult
-import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignResultEntity
+import `in`.hridayan.concretecalc.concrete.mix_design.data.model.MixDesignSavedResultEntity
 import `in`.hridayan.concretecalc.concrete.mix_design.domain.model.MixDesignResultHolder
 import `in`.hridayan.concretecalc.concrete.mix_design.domain.repository.MixDesignRepository
 import `in`.hridayan.concretecalc.concrete.mix_design.presentation.states.MixDesignScreenState
+import `in`.hridayan.concretecalc.concrete.mix_design.presentation.states.SaveButtonVisibilityHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -53,6 +55,12 @@ class MixDesignViewModel @Inject constructor(
 
     val mixResult = concreteRepository.mixDesignResult
 
+    fun setShowSaveButton(value: Boolean) {
+        SaveButtonVisibilityHolder.value = value
+    }
+
+    fun getShowSaveButton(): Boolean = SaveButtonVisibilityHolder.value
+
     fun calculate() {
         viewModelScope.launch {
             concreteRepository.calculateMixDesign(_states.value)
@@ -66,7 +74,7 @@ class MixDesignViewModel @Inject constructor(
     init {
         loadGrades()
         viewModelScope.launch {
-            mixDesignRepository.getAllResults().collect { results ->
+            mixDesignRepository.getAllSavedResults().collect { results ->
                 Log.d("MixDesignViewModel", "All results from DB: $results")
             }
         }
@@ -495,12 +503,27 @@ class MixDesignViewModel @Inject constructor(
         return pricePerVolume * volume
     }
 
-    suspend fun saveMixDesignResult(result: MixDesignResultEntity): Boolean {
+    suspend fun saveMixDesignResult(result: MixDesignSavedResultEntity): Boolean {
         return try {
             withContext(Dispatchers.IO) {
                 val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
 
-                mixDesignRepository.saveResult(result.copy(saveDate = currentDate))
+                mixDesignRepository.saveResultInSave(result.copy(saveDate = currentDate))
+                Log.d("MixDesign", "Saving result: $result")
+            }
+            true
+        } catch (e: Exception) {
+            Log.d("MixDesignViewModel", "saveMixDesignResult: ${e.message}")
+            false
+        }
+    }
+
+    suspend fun saveRecentMixDesignResult(result: MixDesignRecentResultEntity): Boolean {
+        return try {
+            withContext(Dispatchers.IO) {
+                val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+
+                mixDesignRepository.saveResultInRecent(result.copy(saveDate = currentDate))
                 Log.d("MixDesign", "Saving result: $result")
             }
             true
@@ -511,17 +534,53 @@ class MixDesignViewModel @Inject constructor(
     }
 
 
-    val allResults: StateFlow<List<MixDesignResultEntity>> = mixDesignRepository.getAllResults()
+    val allSavedResults: StateFlow<List<MixDesignSavedResultEntity>> = mixDesignRepository.getAllSavedResults()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 
-    fun setResultData(entity: MixDesignResultEntity?) {
+    val allRecentResults: StateFlow<List<MixDesignRecentResultEntity>> = mixDesignRepository.getAllRecentResults()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun setResultDataFromSavedData(entity: MixDesignSavedResultEntity?) {
         viewModelScope.launch {
 
-            Log.d("MixDesignViewModel", "${allResults.value}")
+            Log.d("MixDesignViewModel", "${allSavedResults.value}")
+
+            val result = MixDesignResult(
+                projectName = entity?.projectName ?: "",
+                volumeOfConcrete = entity?.volumeOfConcrete ?: 0.00,
+                concreteGrade = entity?.concreteGrade ?: "",
+                cementGrade = entity?.cementGrade ?: CementGrades.OPC_43,
+                maxAggregateSize = entity?.maxAggregateSize ?: 0,
+                cementContentWithAdmixture = entity?.cementContentWithAdmixture ?: 0.00,
+                cementContentWithoutAdmixture = entity?.cementContentWithoutAdmixture ?: 0.00,
+                finalWaterInKg = entity?.finalWaterInKg ?: 0.00,
+                finalWaterVolume = entity?.finalWaterVolume ?: 0.00,
+                finalCementInKg = entity?.finalCementInKg ?: 0.00,
+                finalCementVolume = entity?.finalCementVolume ?: 0.00,
+                finalCoarseAggregateInKg = entity?.finalCoarseAggregateInKg ?: 0.00,
+                finalCoarseAggregateVolume = entity?.finalCoarseAggregateVolume ?: 0.00,
+                finalFineAggregateInKg = entity?.finalFineAggregateInKg ?: 0.00,
+                finalFineAggregateVolume = entity?.finalFineAggregateVolume ?: 0.00,
+                finalAdmixtureContent = entity?.finalAdmixtureContent ?: 0.00,
+                mixProportion = entity?.mixProportion ?: ""
+            )
+
+            MixDesignResultHolder.setResult(result)
+        }
+    }
+
+    fun setResultDataFromRecentData(entity: MixDesignRecentResultEntity?) {
+        viewModelScope.launch {
+
+            Log.d("MixDesignViewModel", "${allRecentResults.value}")
 
             val result = MixDesignResult(
                 projectName = entity?.projectName ?: "",
